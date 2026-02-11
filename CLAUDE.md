@@ -1,0 +1,129 @@
+# CLAUDE.md - chanfana-openapi-template
+
+## Project Overview
+
+A Cloudflare Workers backend API template that builds OpenAPI 3.1 compliant REST APIs using Hono, Chanfana (auto-generates OpenAPI docs from code), Zod validation, and D1 for persistence. Includes a full task CRUD example with integration tests.
+
+## Tech Stack
+
+- **Runtime:** Cloudflare Workers
+- **Framework:** Hono 4.8.2
+- **OpenAPI:** Chanfana 2.8.1 (auto-generates OpenAPI 3.1 schemas)
+- **Validation:** Zod 3.25.67
+- **Database:** Cloudflare D1 (SQLite) with migration-based schema management
+- **Testing:** Vitest + @cloudflare/vitest-pool-workers 0.8.44
+- **Language:** TypeScript 5.8+ (strict mode, `moduleResolution: "bundler"`)
+- **Build/Deploy:** Wrangler 4.21.x
+
+## Project Structure
+
+```
+src/
+  index.ts                    # Main Hono app, OpenAPI registry, error handler, routes
+  types.ts                    # Shared types (AppContext, HandleArgs)
+  endpoints/
+    dummyEndpoint.ts          # Example custom endpoint with manual OpenAPI definition
+    tasks/
+      router.ts               # Task sub-router (GET, POST, PUT, DELETE)
+      base.ts                 # Task Zod schema and D1 model definition
+      taskCreate.ts           # POST /tasks (extends D1CreateEndpoint)
+      taskRead.ts             # GET /tasks/{id} (extends D1ReadEndpoint)
+      taskUpdate.ts           # PUT /tasks/{id} (extends D1UpdateEndpoint)
+      taskDelete.ts           # DELETE /tasks/{id} (extends D1DeleteEndpoint)
+      taskList.ts             # GET /tasks (extends D1ListEndpoint, supports search)
+tests/
+  vitest.config.mts           # Vitest config with Miniflare Workers pool
+  apply-migrations.ts         # Applies D1 migrations before tests
+  bindings.d.ts               # Test environment type extensions
+  integration/
+    tasks.test.ts             # Full CRUD integration tests for tasks
+    dummyEndpoint.test.ts     # Tests for example endpoint
+migrations/
+  0001_add_tasks_table.sql    # Creates tasks table schema
+```
+
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `npm install` | Install dependencies |
+| `npm run dev` | Apply local migrations then start dev server |
+| `npm run test` | Dry-run deploy + run Vitest integration tests |
+| `npm run deploy` | Deploy to Cloudflare Workers (auto-applies remote migrations) |
+| `npm run cf-typegen` | Regenerate TypeScript types from wrangler.jsonc |
+| `npm run seedLocalDb` | Apply D1 migrations to local dev database |
+| `npm run schema` | Extract OpenAPI schema via `npx chanfana` |
+
+## Architecture
+
+### Environment Bindings
+- `DB` - D1Database binding (database: `openapi-template-db`)
+
+### Chanfana D1 Auto-Endpoints
+Task endpoints extend Chanfana's built-in D1 endpoint classes (`D1CreateEndpoint`, `D1ReadEndpoint`, etc.) which auto-generate:
+- OpenAPI schema from Zod definitions
+- SQL queries from the model definition
+- Request validation and error responses
+
+The `TaskModel` in `base.ts` defines the single source of truth:
+- `tableName` - D1 table name
+- `primaryKeys` - primary key columns
+- `schema` - Zod schema (used for both validation and OpenAPI generation)
+- `serializer` - transforms DB rows (e.g., SQLite INTEGER to JS boolean for `completed`)
+
+### API Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/tasks` | List tasks (supports `?search`, pagination) |
+| POST | `/tasks` | Create task |
+| GET | `/tasks/{id}` | Get task by ID |
+| PUT | `/tasks/{id}` | Update task |
+| DELETE | `/tasks/{id}` | Delete task |
+| POST | `/dummy/{slug}` | Example custom endpoint |
+| GET | `/` | OpenAPI documentation |
+
+### Response Format
+```json
+{ "success": true, "result": { ... } }
+{ "success": false, "errors": [ ... ] }
+```
+
+### Error Handling
+Global error handler in `index.ts` catches `ApiException` from Chanfana and returns structured error responses with appropriate HTTP status codes.
+
+## Testing
+
+Tests run in an isolated Cloudflare Workers environment using Miniflare:
+- Migrations are applied fresh before each test run via `apply-migrations.ts`
+- Tests use `SELF.fetch()` to make requests to the local worker
+- Config is in `tests/vitest.config.mts`
+
+Run tests with:
+```bash
+npm run test
+```
+
+## Database Migrations
+
+Migrations live in `migrations/` and are applied:
+- **Local dev:** automatically on `npm run dev` (via `seedLocalDb`)
+- **Remote deploy:** automatically via `predeploy` hook
+- **Tests:** automatically via `apply-migrations.ts` setup file
+
+To add a new migration, create a file like `migrations/0002_description.sql`.
+
+## Key Conventions
+
+- Define Zod schemas in `base.ts` files per resource; these drive both validation and OpenAPI docs
+- Extend Chanfana D1 endpoint classes for standard CRUD; use manual `OpenAPIRoute` for custom logic
+- Sub-routers use `fromHono(new Hono())` from Chanfana to wrap Hono routers with OpenAPI support
+- `worker-configuration.d.ts` is auto-generated by `wrangler types` -- do not edit manually
+- SQLite stores booleans as INTEGER; use serializers to convert (see `TaskModel.serializer`)
+
+## Common Pitfalls
+
+- Always run `npm run cf-typegen` after changing `wrangler.jsonc` bindings
+- Run `npm run seedLocalDb` after adding new migrations before `npm run dev`
+- The `completed` field in tasks is stored as INTEGER in SQLite but exposed as boolean in the API via the serializer
+- D1 database must exist before deploying; create with `npx wrangler d1 create <name>`
