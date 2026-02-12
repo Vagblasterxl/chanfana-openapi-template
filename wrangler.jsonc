@@ -12,5 +12,11 @@
       "database_name": "openapi-template-db",
       "database_id": "b96d67ac-a912-4416-9a47-770c627c088b"
     }
-  ]
+  ],
+  // Google Service Account credentials JSON — set via: wrangler secret put GOOGLE_SERVICE_ACCOUNT
+  // Paste the full JSON key file contents when prompted.
+  // Required scopes: Sheets, Drive, Calendar, Gmail
+  "vars": {
+    "GOOGLE_SERVICE_ACCOUNT_NOTE": "Set GOOGLE_SERVICE_ACCOUNT as a secret via: wrangler secret put GOOGLE_SERVICE_ACCOUNT"
+  }
 }
