@@ -13,10 +13,10 @@
       "database_id": "b96d67ac-a912-4416-9a47-770c627c088b"
     }
   ],
-  // Google Service Account credentials JSON — set via: wrangler secret put GOOGLE_SERVICE_ACCOUNT
-  // Paste the full JSON key file contents when prompted.
-  // Required scopes: Sheets, Drive, Calendar, Gmail
+  // Secrets (set via wrangler secret put):
+  //   GOOGLE_SERVICE_ACCOUNT — Google Service Account JSON key (Sheets, Drive, Calendar, Gmail, Firestore)
+  //   GITHUB_TOKEN           — GitHub Personal Access Token (repo scope)
   "vars": {
-    "GOOGLE_SERVICE_ACCOUNT_NOTE": "Set GOOGLE_SERVICE_ACCOUNT as a secret via: wrangler secret put GOOGLE_SERVICE_ACCOUNT"
+    "FIREBASE_PROJECT_ID": "YOUR_FIREBASE_PROJECT_ID"
   }
 }

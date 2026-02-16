@@ -2,8 +2,9 @@ import { ApiException, fromHono } from "chanfana";
 import { Hono } from "hono";
 import { tasksRouter } from "./endpoints/tasks/router";
 import { googleRouter } from "./endpoints/google/router";
+import { githubRouter } from "./endpoints/github/router";
+import { firebaseRouter } from "./endpoints/firebase/router";
 import { ContentfulStatusCode } from "hono/utils/http-status";
-import { DummyEndpoint } from "./endpoints/dummyEndpoint";
 
 // Start a Hono app
 const app = new Hono<{ Bindings: Env }>();
@@ -34,22 +35,25 @@ const openapi = fromHono(app, {
   docs_url: "/",
   schema: {
     info: {
-      title: "Cloudflare + Google Stack API",
-      version: "2.0.0",
+      title: "Vagblasterxl Command Center",
+      version: "3.0.0",
       description:
-        "Unified API gateway — Cloudflare Workers proxying Google Sheets, Drive, Calendar, and Gmail alongside D1-backed task management.",
+        "Unified control plane — Cloudflare Workers + Google (Sheets, Drive, Calendar, Gmail) + Firebase (Firestore) + GitHub (repos, discover, deploy). Hit /google/status and /github/status to verify connections.",
     },
   },
 });
 
-// Register Tasks Sub router
+// D1-backed task management
 openapi.route("/tasks", tasksRouter);
 
-// Register Google API proxy sub router
+// Google APIs: Sheets, Drive, Calendar, Gmail, status, D1-to-Sheet sync
 openapi.route("/google", googleRouter);
 
-// Register other endpoints
-openapi.post("/dummy/:slug", DummyEndpoint);
+// GitHub: repos, discover (vending machine), deploy (one-click fork)
+openapi.route("/github", githubRouter);
+
+// Firebase: Firestore CRUD
+openapi.route("/firebase", firebaseRouter);
 
 // Export the Hono app
 export default app;

@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { fromHono } from "chanfana";
 
+import { GoogleStatus } from "./status";
 import { SheetsGet, SheetsUpdate, SheetsAppend, SheetsCreate } from "./sheets";
 import { DriveList, DriveGet, DriveDelete } from "./drive";
 import {
@@ -14,8 +15,15 @@ import {
   GmailGetMessage,
   GmailSendMessage,
 } from "./gmail";
+import { SyncD1ToSheet } from "./sync";
 
 export const googleRouter = fromHono(new Hono());
+
+// --- Status ---
+googleRouter.get("/status", GoogleStatus);
+
+// --- Sync ---
+googleRouter.post("/sync/d1-to-sheet", SyncD1ToSheet);
 
 // --- Google Sheets ---
 googleRouter.post("/sheets", SheetsCreate);
