@@ -21,50 +21,53 @@
     "mcp-imagen": {
       "command": "mcp-imagen-go",
       "env": {
-        "PROJECT_ID": "PASTE_YOUR_GCP_PROJECT_ID_HERE",
-        "LOCATION": "us-central1",
-        "GENMEDIA_BUCKET": "PASTE_YOUR_GCS_BUCKET_HERE",
+        "GEMINI_API_KEY": "PASTE_YOUR_GEMINI_API_KEY_HERE",
+        "OUTPUT_DIR": "./generated/images",
         "MCP_SERVER_REQUEST_TIMEOUT": "55000"
-      }
+      },
+      "_note": "Firebase AI Logic — uses Gemini API key, NOT Vertex AI PROJECT_ID. Images save locally to OUTPUT_DIR."
     },
     "mcp-veo": {
       "command": "mcp-veo-go",
       "env": {
-        "PROJECT_ID": "PASTE_YOUR_GCP_PROJECT_ID_HERE",
-        "LOCATION": "us-central1",
-        "GENMEDIA_BUCKET": "PASTE_YOUR_GCS_BUCKET_HERE",
-        "MCP_SERVER_REQUEST_TIMEOUT": "55000"
-      }
+        "GEMINI_API_KEY": "PASTE_YOUR_GEMINI_API_KEY_HERE",
+        "OUTPUT_DIR": "./generated/video",
+        "MCP_SERVER_REQUEST_TIMEOUT": "120000"
+      },
+      "_note": "Firebase AI Logic — Veo 3.1 via Gemini API. Videos save locally. No Vertex billing."
     },
     "mcp-lyria": {
       "command": "mcp-lyria-go",
       "env": {
-        "PROJECT_ID": "PASTE_YOUR_GCP_PROJECT_ID_HERE",
-        "LOCATION": "us-central1",
-        "GENMEDIA_BUCKET": "PASTE_YOUR_GCS_BUCKET_HERE",
+        "GEMINI_API_KEY": "PASTE_YOUR_GEMINI_API_KEY_HERE",
+        "OUTPUT_DIR": "./generated/music",
         "MCP_SERVER_REQUEST_TIMEOUT": "55000"
-      }
+      },
+      "_note": "Firebase AI Logic — Lyria music gen via Gemini API. Saves locally."
     },
     "mcp-chirp": {
       "command": "mcp-chirp3-go",
       "env": {
-        "PROJECT_ID": "PASTE_YOUR_GCP_PROJECT_ID_HERE",
-        "LOCATION": "us-central1",
-        "GENMEDIA_BUCKET": "PASTE_YOUR_GCS_BUCKET_HERE"
-      }
+        "GEMINI_API_KEY": "PASTE_YOUR_GEMINI_API_KEY_HERE",
+        "OUTPUT_DIR": "./generated/tts"
+      },
+      "_note": "Firebase AI Logic — Chirp TTS via Gemini API. Narration saves locally."
     },
     "mcp-gemini": {
       "command": "mcp-gemini-go",
       "env": {
-        "PROJECT_ID": "PASTE_YOUR_GCP_PROJECT_ID_HERE"
-      }
+        "GEMINI_API_KEY": "PASTE_YOUR_GEMINI_API_KEY_HERE"
+      },
+      "_note": "Firebase AI Logic — Gemini 2.5 via API key. No Vertex."
     },
     "mcp-avtool": {
       "command": "mcp-avtool-go",
       "env": {
-        "PROJECT_ID": "PASTE_YOUR_GCP_PROJECT_ID_HERE",
+        "GEMINI_API_KEY": "PASTE_YOUR_GEMINI_API_KEY_HERE",
+        "OUTPUT_DIR": "./generated/av",
         "MCP_SERVER_REQUEST_TIMEOUT": "55000"
-      }
+      },
+      "_note": "AV tool for assembly/concat. Uses Gemini for smart edits."
     }
   }
 }

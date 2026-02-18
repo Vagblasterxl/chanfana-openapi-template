@@ -223,3 +223,6 @@ media/compositions/*.mov
 
 # Symlink indexes are generated — not tracked
 media/_index/
+
+### Generated Assets (local, you keep these) ###
+generated/
