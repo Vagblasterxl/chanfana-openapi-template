@@ -13,3 +13,6 @@
 [submodule "setup/repos/nblm-rs"]
 	path = setup/repos/nblm-rs
 	url = https://github.com/K-dash/nblm-rs.git
+[submodule "setup/repos/vertex-ai-creative-studio"]
+	path = setup/repos/vertex-ai-creative-studio
+	url = https://github.com/GoogleCloudPlatform/vertex-ai-creative-studio.git

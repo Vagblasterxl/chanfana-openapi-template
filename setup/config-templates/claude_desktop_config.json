@@ -17,6 +17,54 @@
         "CLIENT_SECRET": "PASTE_YOUR_CLIENT_SECRET_HERE",
         "REDIRECT_URI": "http://localhost:3000"
       }
+    },
+    "mcp-imagen": {
+      "command": "mcp-imagen-go",
+      "env": {
+        "PROJECT_ID": "PASTE_YOUR_GCP_PROJECT_ID_HERE",
+        "LOCATION": "us-central1",
+        "GENMEDIA_BUCKET": "PASTE_YOUR_GCS_BUCKET_HERE",
+        "MCP_SERVER_REQUEST_TIMEOUT": "55000"
+      }
+    },
+    "mcp-veo": {
+      "command": "mcp-veo-go",
+      "env": {
+        "PROJECT_ID": "PASTE_YOUR_GCP_PROJECT_ID_HERE",
+        "LOCATION": "us-central1",
+        "GENMEDIA_BUCKET": "PASTE_YOUR_GCS_BUCKET_HERE",
+        "MCP_SERVER_REQUEST_TIMEOUT": "55000"
+      }
+    },
+    "mcp-lyria": {
+      "command": "mcp-lyria-go",
+      "env": {
+        "PROJECT_ID": "PASTE_YOUR_GCP_PROJECT_ID_HERE",
+        "LOCATION": "us-central1",
+        "GENMEDIA_BUCKET": "PASTE_YOUR_GCS_BUCKET_HERE",
+        "MCP_SERVER_REQUEST_TIMEOUT": "55000"
+      }
+    },
+    "mcp-chirp": {
+      "command": "mcp-chirp3-go",
+      "env": {
+        "PROJECT_ID": "PASTE_YOUR_GCP_PROJECT_ID_HERE",
+        "LOCATION": "us-central1",
+        "GENMEDIA_BUCKET": "PASTE_YOUR_GCS_BUCKET_HERE"
+      }
+    },
+    "mcp-gemini": {
+      "command": "mcp-gemini-go",
+      "env": {
+        "PROJECT_ID": "PASTE_YOUR_GCP_PROJECT_ID_HERE"
+      }
+    },
+    "mcp-avtool": {
+      "command": "mcp-avtool-go",
+      "env": {
+        "PROJECT_ID": "PASTE_YOUR_GCP_PROJECT_ID_HERE",
+        "MCP_SERVER_REQUEST_TIMEOUT": "55000"
+      }
     }
   }
 }

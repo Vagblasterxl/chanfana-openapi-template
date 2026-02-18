@@ -1,0 +1,27 @@
+formats:
+  narration-male:
+    description: "Male narrator voice for videos"
+    voice_name: "en-US-Chirp3-HD-Fenrir"
+    ssml_gender: "MALE"
+    audio_encoding: "MP3"
+    speaking_rate: 1.0
+    pitch: 0.0
+    model: "chirp-3-hd"
+    mcp_server: "mcp-chirp"
+
+  narration-female:
+    description: "Female narrator voice for videos"
+    voice_name: "en-US-Chirp3-HD-Leda"
+    ssml_gender: "FEMALE"
+    audio_encoding: "MP3"
+    speaking_rate: 1.0
+    pitch: 0.0
+    model: "chirp-3-hd"
+    mcp_server: "mcp-chirp"
+
+  gemini-conversational:
+    description: "Conversational TTS via Gemini (more natural for dialogue)"
+    model: "gemini-2.5-flash"
+    mcp_server: "mcp-gemini"
+    audio_encoding: "MP3"
+    speaking_rate: 1.0

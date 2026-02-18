@@ -1,0 +1,38 @@
+formats:
+  background-loop:
+    description: "Loopable background music for video"
+    duration_seconds: 30
+    sample_rate: 44100
+    format: "wav"
+    model: "lyria"
+    mcp_server: "mcp-lyria"
+    prompt_hints:
+      - "Include: genre, mood, tempo (BPM), instruments"
+      - "For looping: add 'seamless loop' to prompt"
+
+  intro-jingle:
+    description: "Short intro/outro jingle"
+    duration_seconds: 8
+    sample_rate: 44100
+    format: "wav"
+    model: "lyria"
+    mcp_server: "mcp-lyria"
+
+  full-track:
+    description: "Full-length background track"
+    duration_seconds: 120
+    sample_rate: 44100
+    format: "wav"
+    model: "lyria"
+    mcp_server: "mcp-lyria"
+
+  score-segment:
+    description: "Cinematic score segment for video scoring"
+    duration_seconds: 60
+    sample_rate: 44100
+    format: "wav"
+    model: "lyria"
+    mcp_server: "mcp-lyria"
+    prompt_hints:
+      - "Include: emotional arc, instrumentation, tempo changes"
+      - "Reference: film genre (thriller, drama, epic, ambient)"

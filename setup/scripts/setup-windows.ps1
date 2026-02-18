@@ -1,25 +1,29 @@
 # ============================================================================
-# Symphony Pipeline — Windows Master Setup Script
+# Symphony Creative Studio — Windows Master Setup Script
 # Run in PowerShell as Administrator on your Lenovo Yoga 7 or HP nvx360
 # ============================================================================
 #
 # This script installs and configures:
 #   1. NotebookLM MCP (Pantheon Security) — Claude ↔ NotebookLM bridge
 #   2. Google Drive MCP — Claude ↔ Drive bridge
-#   3. open-notebook (Docker) — local NotebookLM fallback
-#   4. nblm CLI — NotebookLM Enterprise API client
-#   5. AHK Multi-Clipboard — 5-slot clipboard for 5 Symphony categories
-#   6. Symphony AHK script — Advanced Paste → category → Drive chain
-#   7. Ollama — local AI for Advanced Paste
+#   3. Claude Desktop config — all 8 MCP servers
+#   4. open-notebook (Docker) — local NotebookLM fallback
+#   5. Ollama — local AI for Advanced Paste + metadata
+#   6. AHK Multi-Clipboard + Symphony script
+#   7. Vertex AI Creative Studio — 6 media generation MCP servers (Go)
+#   8. FFmpeg — required for media composition (mcp-avtool)
+#   9. Google Cloud CLI + ADC auth — for Vertex AI
 #
-# PREREQUISITES: Git, Node.js 18+, Docker Desktop, Python 3.11+
-# USER INPUT NEEDED: 3 values (Gemini API key, Google OAuth ID+Secret)
+# PREREQUISITES: Git, Node.js 18+, Docker Desktop
+# USER INPUT NEEDED: 5 values (Gemini key, OAuth ID+Secret, GCP Project, GCS Bucket)
 # ============================================================================
 
 param(
     [string]$GeminiApiKey = "",
     [string]$GoogleClientId = "",
     [string]$GoogleClientSecret = "",
+    [string]$GcpProjectId = "",
+    [string]$GcsBucketName = "",
     [string]$InstallDir = "$env:USERPROFILE\Symphony"
 )
 
@@ -54,15 +58,27 @@ if (-not $GoogleClientId) {
     $GoogleClientSecret = Read-Host "  Paste Client Secret"
 }
 
+if (-not $GcpProjectId) {
+    Write-Host ""
+    Write-Host "[INPUT NEEDED] Google Cloud Project ID + GCS Bucket" -ForegroundColor Yellow
+    Write-Host "  For Vertex AI media generation (Veo, Imagen, Lyria, Chirp)" -ForegroundColor Gray
+    Write-Host "  → console.cloud.google.com → Select/create project" -ForegroundColor Gray
+    Write-Host "  → Enable Vertex AI API" -ForegroundColor Gray
+    Write-Host "  → Create GCS bucket: gsutil mb -l us-central1 gs://your-bucket" -ForegroundColor Gray
+    Write-Host ""
+    $GcpProjectId = Read-Host "  Paste GCP Project ID"
+    $GcsBucketName = Read-Host "  Paste GCS Bucket name (without gs://)"
+}
+
 Write-Host ""
-Write-Host "Got all 3 credentials. Starting automated setup..." -ForegroundColor Green
+Write-Host "Got all 5 credentials. Starting automated setup..." -ForegroundColor Green
 Write-Host ""
 
 # ============================================================================
 # STEP 1: Create install directory
 # ============================================================================
 
-Write-Host "[1/7] Creating install directory: $InstallDir" -ForegroundColor Cyan
+Write-Host "[1/9] Creating install directory: $InstallDir" -ForegroundColor Cyan
 New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
 Set-Location $InstallDir
 
@@ -70,7 +86,7 @@ Set-Location $InstallDir
 # STEP 2: NotebookLM MCP — one command
 # ============================================================================
 
-Write-Host "[2/7] Installing NotebookLM MCP (Pantheon Security)..." -ForegroundColor Cyan
+Write-Host "[2/9] Installing NotebookLM MCP (Pantheon Security)..." -ForegroundColor Cyan
 
 $AuthToken = [Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Maximum 256 }) -as [byte[]])
 
@@ -93,7 +109,7 @@ claude mcp add notebooklm --env NLMCP_AUTH_ENABLED=true --env NLMCP_AUTH_TOKEN=$
 # STEP 3: Google Drive MCP — clone, configure, build, generate token
 # ============================================================================
 
-Write-Host "[3/7] Setting up Google Drive MCP..." -ForegroundColor Cyan
+Write-Host "[3/9] Setting up Google Drive MCP..." -ForegroundColor Cyan
 
 if (-not (Test-Path "$InstallDir\googleDriveMCP")) {
     git clone https://github.com/michaelpine25/googleDriveMCP.git "$InstallDir\googleDriveMCP"
@@ -121,7 +137,7 @@ Write-Host "  Google Drive MCP built. Path: $DriveMcpPath" -ForegroundColor Gree
 # STEP 4: Claude Desktop config — write both MCPs
 # ============================================================================
 
-Write-Host "[4/7] Configuring Claude Desktop MCP servers..." -ForegroundColor Cyan
+Write-Host "[4/9] Configuring Claude Desktop MCP servers (8 total)..." -ForegroundColor Cyan
 
 $ClaudeConfigDir = "$env:APPDATA\Claude"
 $ClaudeConfigPath = "$ClaudeConfigDir\claude_desktop_config.json"
@@ -148,6 +164,54 @@ $config = @{
                 REDIRECT_URI = "http://localhost:3000"
             }
         }
+        "mcp-imagen" = @{
+            command = "mcp-imagen-go"
+            env = @{
+                PROJECT_ID = $GcpProjectId
+                LOCATION = "us-central1"
+                GENMEDIA_BUCKET = $GcsBucketName
+                MCP_SERVER_REQUEST_TIMEOUT = "55000"
+            }
+        }
+        "mcp-veo" = @{
+            command = "mcp-veo-go"
+            env = @{
+                PROJECT_ID = $GcpProjectId
+                LOCATION = "us-central1"
+                GENMEDIA_BUCKET = $GcsBucketName
+                MCP_SERVER_REQUEST_TIMEOUT = "55000"
+            }
+        }
+        "mcp-lyria" = @{
+            command = "mcp-lyria-go"
+            env = @{
+                PROJECT_ID = $GcpProjectId
+                LOCATION = "us-central1"
+                GENMEDIA_BUCKET = $GcsBucketName
+                MCP_SERVER_REQUEST_TIMEOUT = "55000"
+            }
+        }
+        "mcp-chirp" = @{
+            command = "mcp-chirp3-go"
+            env = @{
+                PROJECT_ID = $GcpProjectId
+                LOCATION = "us-central1"
+                GENMEDIA_BUCKET = $GcsBucketName
+            }
+        }
+        "mcp-gemini" = @{
+            command = "mcp-gemini-go"
+            env = @{
+                PROJECT_ID = $GcpProjectId
+            }
+        }
+        "mcp-avtool" = @{
+            command = "mcp-avtool-go"
+            env = @{
+                PROJECT_ID = $GcpProjectId
+                MCP_SERVER_REQUEST_TIMEOUT = "55000"
+            }
+        }
     }
 }
 
@@ -158,7 +222,7 @@ Write-Host "  Wrote: $ClaudeConfigPath" -ForegroundColor Green
 # STEP 5: open-notebook (Docker) — local NotebookLM fallback
 # ============================================================================
 
-Write-Host "[5/7] Starting open-notebook (Docker)..." -ForegroundColor Cyan
+Write-Host "[5/9] Starting open-notebook (Docker)..." -ForegroundColor Cyan
 
 try {
     docker version | Out-Null
@@ -187,7 +251,7 @@ try {
 # STEP 6: Ollama — local AI for Advanced Paste
 # ============================================================================
 
-Write-Host "[6/7] Setting up Ollama (local AI)..." -ForegroundColor Cyan
+Write-Host "[6/9] Setting up Ollama (local AI)..." -ForegroundColor Cyan
 
 try {
     $ollamaCheck = Get-Command ollama -ErrorAction SilentlyContinue
@@ -215,7 +279,7 @@ try {
 # STEP 7: AHK scripts — Multi-Clipboard + Symphony integration
 # ============================================================================
 
-Write-Host "[7/7] Installing AHK scripts..." -ForegroundColor Cyan
+Write-Host "[7/9] Installing AHK scripts..." -ForegroundColor Cyan
 
 $AhkDir = "$InstallDir\ahk-scripts"
 New-Item -ItemType Directory -Path $AhkDir -Force | Out-Null
@@ -253,6 +317,70 @@ try {
 Write-Host "  AHK scripts in: $AhkDir" -ForegroundColor Green
 
 # ============================================================================
+# STEP 8: Vertex AI Creative Studio — build 6 Go MCP binaries
+# ============================================================================
+
+Write-Host "[8/9] Building Vertex AI Creative Studio MCP servers..." -ForegroundColor Cyan
+
+try {
+    $goCheck = Get-Command go -ErrorAction SilentlyContinue
+    if (-not $goCheck) {
+        Write-Host "  Installing Go via winget..." -ForegroundColor Yellow
+        winget install GoLang.Go --accept-source-agreements --accept-package-agreements
+        $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH", "User")
+    }
+
+    if (-not (Test-Path "$InstallDir\vertex-ai-creative-studio")) {
+        git clone --depth 1 https://github.com/GoogleCloudPlatform/vertex-ai-creative-studio.git "$InstallDir\vertex-ai-creative-studio"
+    }
+
+    Set-Location "$InstallDir\vertex-ai-creative-studio\experiments\mcp-genmedia\mcp-genmedia-go"
+    go work sync
+    go install ./mcp-avtool-go ./mcp-chirp3-go ./mcp-gemini-go ./mcp-imagen-go ./mcp-lyria-go ./mcp-veo-go
+
+    $goPath = go env GOPATH
+    $goBin = "$goPath\bin"
+    if ($env:PATH -notlike "*$goBin*") {
+        [System.Environment]::SetEnvironmentVariable("PATH", $env:PATH + ";$goBin", "User")
+        $env:PATH += ";$goBin"
+    }
+
+    # Install FFmpeg (required by mcp-avtool-go)
+    $ffmpegCheck = Get-Command ffmpeg -ErrorAction SilentlyContinue
+    if (-not $ffmpegCheck) {
+        Write-Host "  Installing FFmpeg via winget..." -ForegroundColor Yellow
+        winget install Gyan.FFmpeg --accept-source-agreements --accept-package-agreements
+    }
+
+    Write-Host "  Built 6 MCP binaries: mcp-imagen-go, mcp-veo-go, mcp-lyria-go, mcp-chirp3-go, mcp-gemini-go, mcp-avtool-go" -ForegroundColor Green
+    Write-Host "  FFmpeg installed (required by mcp-avtool)." -ForegroundColor Green
+} catch {
+    Write-Host "  WARNING: Go build failed. Install Go manually, then re-run." -ForegroundColor Yellow
+    Write-Host "  Manual: go install ./mcp-avtool-go ./mcp-chirp3-go ./mcp-gemini-go ./mcp-imagen-go ./mcp-lyria-go ./mcp-veo-go" -ForegroundColor Yellow
+}
+
+# ============================================================================
+# STEP 9: Google Cloud CLI + ADC auth
+# ============================================================================
+
+Write-Host "[9/9] Setting up Google Cloud authentication..." -ForegroundColor Cyan
+
+try {
+    $gcloudCheck = Get-Command gcloud -ErrorAction SilentlyContinue
+    if (-not $gcloudCheck) {
+        Write-Host "  Installing Google Cloud CLI via winget..." -ForegroundColor Yellow
+        winget install Google.CloudSDK --accept-source-agreements --accept-package-agreements
+        $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH", "User")
+    }
+
+    Write-Host "  Opening browser for Google Cloud login..." -ForegroundColor Yellow
+    gcloud auth application-default login
+    Write-Host "  ADC credentials saved. All Vertex AI MCP servers will use these." -ForegroundColor Green
+} catch {
+    Write-Host "  WARNING: gcloud auth failed. Run manually: gcloud auth application-default login" -ForegroundColor Yellow
+}
+
+# ============================================================================
 # DONE
 # ============================================================================
 
@@ -265,15 +393,26 @@ Write-Host "========================================" -ForegroundColor Green
 Write-Host ""
 Write-Host "Installed to: $InstallDir" -ForegroundColor White
 Write-Host ""
+Write-Host "MCP SERVERS (8):" -ForegroundColor Yellow
+Write-Host "  notebooklm     — NotebookLM knowledge management" -ForegroundColor White
+Write-Host "  googleDrive    — Google Drive file access" -ForegroundColor White
+Write-Host "  mcp-imagen     — Vertex AI image generation (Imagen 3)" -ForegroundColor White
+Write-Host "  mcp-veo        — Vertex AI video generation (Veo 2)" -ForegroundColor White
+Write-Host "  mcp-lyria      — Vertex AI music generation" -ForegroundColor White
+Write-Host "  mcp-chirp      — Vertex AI speech (Chirp 3 HD)" -ForegroundColor White
+Write-Host "  mcp-gemini     — Vertex AI multimodal (Gemini 2.5)" -ForegroundColor White
+Write-Host "  mcp-avtool     — FFmpeg media composition" -ForegroundColor White
+Write-Host ""
 Write-Host "NEXT STEPS:" -ForegroundColor Yellow
 Write-Host "  1. Restart Claude Desktop" -ForegroundColor White
 Write-Host "  2. Say: 'Log me in to NotebookLM'" -ForegroundColor White
 Write-Host "  3. Say: 'List files in my Google Drive'" -ForegroundColor White
-Write-Host "  4. Open PowerToys > Advanced Paste > Add Ollama provider" -ForegroundColor White
+Write-Host "  4. Say: 'Generate an image of a sunset over mountains'" -ForegroundColor White
+Write-Host "  5. Open PowerToys > Advanced Paste > Add Ollama provider" -ForegroundColor White
 Write-Host "     URL: http://localhost:11434  Model: mistral:7b" -ForegroundColor Gray
-Write-Host "  5. Edit Apps Script URL in: $AhkDir\symphony-advanced-paste.ahk" -ForegroundColor White
-Write-Host "  6. Double-click symphony-advanced-paste.ahk to start" -ForegroundColor White
-Write-Host "  7. open-notebook UI: http://localhost:8502" -ForegroundColor White
+Write-Host "  6. Edit Apps Script URL in: $AhkDir\symphony-advanced-paste.ahk" -ForegroundColor White
+Write-Host "  7. Double-click symphony-advanced-paste.ahk to start" -ForegroundColor White
+Write-Host "  8. open-notebook UI: http://localhost:8502" -ForegroundColor White
 Write-Host ""
 Write-Host "HOTKEYS:" -ForegroundColor Yellow
 Write-Host "  Win+Shift+V     = Advanced Paste (PowerToys)" -ForegroundColor White
