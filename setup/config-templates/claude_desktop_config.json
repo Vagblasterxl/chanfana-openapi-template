@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "notebooklm": {
+      "command": "npx",
+      "args": ["@pan-sec/notebooklm-mcp@latest"],
+      "env": {
+        "NLMCP_AUTH_ENABLED": "true",
+        "NLMCP_AUTH_TOKEN": "PASTE_AUTH_TOKEN_HERE",
+        "GEMINI_API_KEY": "PASTE_YOUR_GEMINI_API_KEY_HERE"
+      }
+    },
+    "googleDrive": {
+      "command": "node",
+      "args": ["PASTE_PATH_TO/googleDriveMCP/build/index.js"],
+      "env": {
+        "CLIENT_ID": "PASTE_YOUR_CLIENT_ID_HERE",
+        "CLIENT_SECRET": "PASTE_YOUR_CLIENT_SECRET_HERE",
+        "REDIRECT_URI": "http://localhost:3000"
+      }
+    }
+  }
+}

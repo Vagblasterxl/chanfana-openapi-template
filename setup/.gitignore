@@ -1,0 +1,14 @@
+# Ignore node_modules inside cloned repos (large, reinstallable)
+repos/*/node_modules/
+repos/*/build/
+repos/*/dist/
+repos/*/.next/
+repos/*/target/
+
+# Ignore generated tokens and secrets
+repos/*/.env
+repos/*/token.json
+
+# OS files
+.DS_Store
+Thumbs.db

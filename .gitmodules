@@ -1,0 +1,15 @@
+[submodule "setup/repos/notebooklm-mcp-secure"]
+	path = setup/repos/notebooklm-mcp-secure
+	url = https://github.com/Pantheon-Security/notebooklm-mcp-secure.git
+[submodule "setup/repos/googleDriveMCP"]
+	path = setup/repos/googleDriveMCP
+	url = https://github.com/michaelpine25/googleDriveMCP.git
+[submodule "setup/repos/open-notebook"]
+	path = setup/repos/open-notebook
+	url = https://github.com/lfnovo/open-notebook.git
+[submodule "setup/repos/AHK_Multi_Clipboard"]
+	path = setup/repos/AHK_Multi_Clipboard
+	url = https://github.com/GroggyOtter/AHK_Multi_Clipboard.git
+[submodule "setup/repos/nblm-rs"]
+	path = setup/repos/nblm-rs
+	url = https://github.com/K-dash/nblm-rs.git
