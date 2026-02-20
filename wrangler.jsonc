@@ -12,5 +12,16 @@
       "database_name": "openapi-template-db",
       "database_id": "b96d67ac-a912-4416-9a47-770c627c088b"
     }
-  ]
+  ],
+  // R2 bucket for coordination file sync between workers
+  "r2_buckets": [
+    {
+      "binding": "R2_BUCKET",
+      "bucket_name": "coordination-sync-ken"
+    }
+  ],
+  // Symphony API key for coordination endpoint auth
+  "vars": {
+    "API_KEY": "symphony-ken-2026"
+  }
 }
