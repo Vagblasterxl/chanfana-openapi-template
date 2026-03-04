@@ -12,22 +12,14 @@ interface SyncEnv {
 export class SyncD1ToSheet extends OpenAPIRoute {
   public schema = {
     tags: ["Sync"],
-    summary: "Export a D1 table to a Google Sheet — see your data instantly",
+    summary: "Export any D1 table to a Google Sheet",
     operationId: "google-sync-d1-to-sheet",
     request: {
       body: contentJson(
         z.object({
-          table: z
-            .string()
-            .describe("D1 table name to export, e.g. 'tasks' or 'activity_log'"),
-          spreadsheetId: z
-            .string()
-            .optional()
-            .describe("Existing Spreadsheet ID. If omitted, a new sheet is created."),
-          sheetName: z
-            .string()
-            .optional()
-            .describe("Tab name (default: table name)"),
+          table: z.string().describe("D1 table name to export, e.g. 'tasks' or 'activity_log'"),
+          spreadsheetId: z.string().optional().describe("Existing Spreadsheet ID. Omit to create new."),
+          sheetName: z.string().optional().describe("Tab name (default: table name)"),
         }),
       ),
     },
@@ -49,7 +41,7 @@ export class SyncD1ToSheet extends OpenAPIRoute {
     const table = data.body.table.replace(/[^a-zA-Z0-9_]/g, "");
     const sheetName = data.body.sheetName || table;
 
-    // 1. Read all rows from D1
+    // Read all rows from D1
     let rows: Record<string, unknown>[];
     try {
       const result = await env.DB.prepare(`SELECT * FROM \`${table}\``).all();
@@ -63,14 +55,14 @@ export class SyncD1ToSheet extends OpenAPIRoute {
       return { success: true, result: { message: "Table is empty, nothing to sync", rows: 0 } };
     }
 
-    // 2. Build the 2D values array: header row + data rows
+    // Build header + data rows
     const columns = Object.keys(rows[0]);
     const values: unknown[][] = [
       columns,
       ...rows.map((row) => columns.map((col) => row[col] ?? "")),
     ];
 
-    // 3. Create or use existing spreadsheet
+    // Create or reuse spreadsheet
     let spreadsheetId = data.body.spreadsheetId;
     if (!spreadsheetId) {
       const createRes = await sheets.create(
@@ -83,12 +75,11 @@ export class SyncD1ToSheet extends OpenAPIRoute {
       spreadsheetId = (createRes.data as { spreadsheetId: string }).spreadsheetId;
     }
 
-    // 4. Write data to the sheet
-    const range = `${sheetName}!A1`;
+    // Write data
     const updateRes = await sheets.update(
       env.GOOGLE_SERVICE_ACCOUNT,
       spreadsheetId!,
-      range,
+      `${sheetName}!A1`,
       values,
     );
 
