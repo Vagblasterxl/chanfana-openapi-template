@@ -4,6 +4,7 @@ import { tasksRouter } from "./endpoints/tasks/router";
 import { googleRouter } from "./endpoints/google/router";
 import { githubRouter } from "./endpoints/github/router";
 import { firebaseRouter } from "./endpoints/firebase/router";
+import { oracleRouter } from "./endpoints/oracle/router";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 
 // Start a Hono app
@@ -38,7 +39,7 @@ const openapi = fromHono(app, {
       title: "Vagblasterxl Command Center",
       version: "3.0.0",
       description:
-        "Unified control plane — Cloudflare Workers + Google (Sheets, Drive, Calendar, Gmail) + Firebase (Firestore) + GitHub (repos, discover, deploy). Hit /google/status and /github/status to verify connections.",
+        "Unified control plane — Cloudflare Workers + Google + Firebase + GitHub + Oracle (inter-agent comms). Hit /oracle/setup first, then /oracle/send to start talking.",
     },
   },
 });
@@ -54,6 +55,9 @@ openapi.route("/github", githubRouter);
 
 // Firebase: Firestore CRUD
 openapi.route("/firebase", firebaseRouter);
+
+// Oracle: Inter-agent communication bus
+openapi.route("/oracle", oracleRouter);
 
 // Export the Hono app
 export default app;
