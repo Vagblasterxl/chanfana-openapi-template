@@ -29,6 +29,14 @@ import {
   RegistryDelete,
 } from "./relay/registry";
 
+// Inbox endpoints
+import { InboxPush } from "./inbox/push";
+import { InboxPull } from "./inbox/pull";
+import { InboxPeek } from "./inbox/peek";
+import { InboxBroadcast } from "./inbox/broadcast";
+import { InboxSubscribe, InboxUnsubscribe, InboxListChannels } from "./inbox/subscribe";
+import { BridgeCreate, BridgeList, BridgeTrigger } from "./inbox/bridge";
+
 export const claudeRouter = fromHono(new Hono());
 
 // ============ MEMORY ============
@@ -60,3 +68,17 @@ claudeRouter.delete("/registry/:id", RegistryDelete);
 // This catches all methods for /relay/:workerName/*
 claudeRouter.all("/relay/:workerName/*", RelayProxy);
 claudeRouter.all("/relay/:workerName", RelayProxy);
+
+// ============ INBOX (Claude-to-Claude relay) ============
+claudeRouter.post("/inbox/push", InboxPush);
+claudeRouter.get("/inbox/pull", InboxPull);
+claudeRouter.get("/inbox/peek", InboxPeek);
+claudeRouter.post("/inbox/broadcast", InboxBroadcast);
+claudeRouter.post("/inbox/subscribe", InboxSubscribe);
+claudeRouter.post("/inbox/unsubscribe", InboxUnsubscribe);
+claudeRouter.get("/inbox/channels", InboxListChannels);
+
+// ============ BUCKET BRIDGES (the scooch) ============
+claudeRouter.post("/bridge", BridgeCreate);
+claudeRouter.get("/bridge", BridgeList);
+claudeRouter.post("/bridge/:name/trigger", BridgeTrigger);
