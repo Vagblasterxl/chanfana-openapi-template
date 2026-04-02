@@ -1,6 +1,7 @@
 import { ApiException, fromHono } from "chanfana";
 import { Hono } from "hono";
 import { tasksRouter } from "./endpoints/tasks/router";
+import { claudeRouter } from "./endpoints/claude/router";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 import { DummyEndpoint } from "./endpoints/dummyEndpoint";
 
@@ -33,15 +34,18 @@ const openapi = fromHono(app, {
   docs_url: "/",
   schema: {
     info: {
-      title: "My Awesome API",
-      version: "2.0.0",
-      description: "This is the documentation for my awesome API.",
+      title: "Claude Sustain Network",
+      version: "1.0.0",
+      description: "Agent persistence layer with memory, comms, sessions, and relay to Ken's Cloudflare infrastructure.",
     },
   },
 });
 
 // Register Tasks Sub router
 openapi.route("/tasks", tasksRouter);
+
+// Register Claude Sustain Network
+openapi.route("/claude", claudeRouter);
 
 // Register other endpoints
 openapi.post("/dummy/:slug", DummyEndpoint);
