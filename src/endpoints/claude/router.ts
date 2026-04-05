@@ -37,6 +37,18 @@ import { InboxBroadcast } from "./inbox/broadcast";
 import { InboxSubscribe, InboxUnsubscribe, InboxListChannels } from "./inbox/subscribe";
 import { BridgeCreate, BridgeList, BridgeTrigger } from "./inbox/bridge";
 
+// Preprocessor endpoints
+import { PreprocessorSubmit } from "./preprocessor/submit";
+import { PreprocessorStatus, PreprocessorList, PreprocessorCancel } from "./preprocessor/status";
+import { ConfigCreate, ConfigList, ConfigRead, ConfigUpdate, ConfigDelete } from "./preprocessor/config";
+import { PipelineCreate, PipelineList, PipelineRun } from "./preprocessor/pipeline";
+import { AutobridgeCreate, AutobridgeList, AutobridgeTrigger } from "./preprocessor/autobridge";
+
+// Artifact endpoints (governance framework)
+import { ArtifactCreate } from "./artifacts/create";
+import { ArtifactRead, ArtifactList as ArtifactListEndpoint } from "./artifacts/read";
+import { ArtifactPromote, ArtifactDriftCheck, ArtifactMVTRun, ArtifactFlagContamination } from "./artifacts/govern";
+
 export const claudeRouter = fromHono(new Hono());
 
 // ============ MEMORY ============
@@ -65,7 +77,6 @@ claudeRouter.put("/registry/:id", RegistryUpdate);
 claudeRouter.delete("/registry/:id", RegistryDelete);
 
 // ============ RELAY PROXY ============
-// This catches all methods for /relay/:workerName/*
 claudeRouter.all("/relay/:workerName/*", RelayProxy);
 claudeRouter.all("/relay/:workerName", RelayProxy);
 
@@ -82,3 +93,29 @@ claudeRouter.get("/inbox/channels", InboxListChannels);
 claudeRouter.post("/bridge", BridgeCreate);
 claudeRouter.get("/bridge", BridgeList);
 claudeRouter.post("/bridge/:name/trigger", BridgeTrigger);
+
+// ============ PREPROCESSOR (Gemma bridge) ============
+claudeRouter.post("/preprocessor/submit", PreprocessorSubmit);
+claudeRouter.get("/preprocessor/jobs", PreprocessorList);
+claudeRouter.get("/preprocessor/status/:jobId", PreprocessorStatus);
+claudeRouter.post("/preprocessor/cancel/:jobId", PreprocessorCancel);
+claudeRouter.post("/preprocessor/config", ConfigCreate);
+claudeRouter.get("/preprocessor/config", ConfigList);
+claudeRouter.get("/preprocessor/config/:name", ConfigRead);
+claudeRouter.put("/preprocessor/config/:name", ConfigUpdate);
+claudeRouter.delete("/preprocessor/config/:name", ConfigDelete);
+claudeRouter.post("/preprocessor/pipeline", PipelineCreate);
+claudeRouter.get("/preprocessor/pipeline", PipelineList);
+claudeRouter.post("/preprocessor/pipeline/:name/run", PipelineRun);
+claudeRouter.post("/preprocessor/autobridge", AutobridgeCreate);
+claudeRouter.get("/preprocessor/autobridge", AutobridgeList);
+claudeRouter.post("/preprocessor/autobridge/:name/trigger", AutobridgeTrigger);
+
+// ============ ARTIFACTS (governance framework) ============
+claudeRouter.post("/artifacts", ArtifactCreate);
+claudeRouter.get("/artifacts", ArtifactListEndpoint);
+claudeRouter.get("/artifacts/:artifactId", ArtifactRead);
+claudeRouter.post("/artifacts/:artifactId/promote", ArtifactPromote);
+claudeRouter.post("/artifacts/:artifactId/drift-check", ArtifactDriftCheck);
+claudeRouter.post("/artifacts/:artifactId/mvt", ArtifactMVTRun);
+claudeRouter.post("/artifacts/:artifactId/flag", ArtifactFlagContamination);
