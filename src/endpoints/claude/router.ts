@@ -46,6 +46,11 @@ import { AutobridgeCreate, AutobridgeList, AutobridgeTrigger } from "./preproces
 
 // Artifact endpoints (governance framework)
 import { ArtifactCreate } from "./artifacts/create";
+
+// Debate endpoints
+import { DebateCreate, DebateList, DebateRead } from "./debate/create";
+import { DebateTurn, DebateScoreTurn, DebateGetPrompt } from "./debate/turn";
+import { DebateQueueJoin, DebateQueueLeave, DebateQueueList, DebateAutoMatch } from "./debate/queue";
 import { ArtifactRead, ArtifactList as ArtifactListEndpoint } from "./artifacts/read";
 import { ArtifactPromote, ArtifactDriftCheck, ArtifactMVTRun, ArtifactFlagContamination } from "./artifacts/govern";
 
@@ -119,3 +124,15 @@ claudeRouter.post("/artifacts/:artifactId/promote", ArtifactPromote);
 claudeRouter.post("/artifacts/:artifactId/drift-check", ArtifactDriftCheck);
 claudeRouter.post("/artifacts/:artifactId/mvt", ArtifactMVTRun);
 claudeRouter.post("/artifacts/:artifactId/flag", ArtifactFlagContamination);
+
+// ============ DEBATE (structured agent dialogue) ============
+claudeRouter.post("/debate", DebateCreate);
+claudeRouter.get("/debate", DebateList);
+claudeRouter.get("/debate/:debateId", DebateRead);
+claudeRouter.post("/debate/:debateId/turn", DebateTurn);
+claudeRouter.post("/debate/:debateId/turn/:turnId/score", DebateScoreTurn);
+claudeRouter.get("/debate/:debateId/prompt", DebateGetPrompt);
+claudeRouter.post("/debate/queue/join", DebateQueueJoin);
+claudeRouter.delete("/debate/queue/:agentId", DebateQueueLeave);
+claudeRouter.get("/debate/queue", DebateQueueList);
+claudeRouter.post("/debate/queue/match", DebateAutoMatch);
