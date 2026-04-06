@@ -51,6 +51,11 @@ import { ArtifactCreate } from "./artifacts/create";
 import { DebateCreate, DebateList, DebateRead } from "./debate/create";
 import { DebateTurn, DebateScoreTurn, DebateGetPrompt } from "./debate/turn";
 import { DebateQueueJoin, DebateQueueLeave, DebateQueueList, DebateAutoMatch } from "./debate/queue";
+
+// Integration endpoints
+import { ReceiverCreate, ReceiverList, WebhookHandler } from "./integrations/receiver";
+import { DispatcherCreate, DispatcherList, DispatcherUpdate, Dispatch, DispatchToManus } from "./integrations/dispatcher";
+import { IntegrationBridgeCreate, IntegrationBridgeList, IntegrationBridgeTrigger } from "./integrations/bridge";
 import { ArtifactRead, ArtifactList as ArtifactListEndpoint } from "./artifacts/read";
 import { ArtifactPromote, ArtifactDriftCheck, ArtifactMVTRun, ArtifactFlagContamination } from "./artifacts/govern";
 
@@ -136,3 +141,23 @@ claudeRouter.post("/debate/queue/join", DebateQueueJoin);
 claudeRouter.delete("/debate/queue/:agentId", DebateQueueLeave);
 claudeRouter.get("/debate/queue", DebateQueueList);
 claudeRouter.post("/debate/queue/match", DebateAutoMatch);
+
+// ============ INTEGRATIONS (Discord, Slack, Polar, Manus) ============
+// Webhook receivers
+claudeRouter.post("/integrations/receiver", ReceiverCreate);
+claudeRouter.get("/integrations/receiver", ReceiverList);
+
+// Dispatchers (outbound)
+claudeRouter.post("/integrations/dispatcher", DispatcherCreate);
+claudeRouter.get("/integrations/dispatcher", DispatcherList);
+claudeRouter.put("/integrations/dispatcher/:name", DispatcherUpdate);
+claudeRouter.post("/integrations/dispatch/:name", Dispatch);
+claudeRouter.post("/integrations/manus", DispatchToManus);
+
+// Integration bridges
+claudeRouter.post("/integrations/bridge", IntegrationBridgeCreate);
+claudeRouter.get("/integrations/bridge", IntegrationBridgeList);
+claudeRouter.post("/integrations/bridge/:name/trigger", IntegrationBridgeTrigger);
+
+// ============ WEBHOOK HANDLERS (catch-all for external platforms) ============
+claudeRouter.all("/hooks/:platform/:id", WebhookHandler);
