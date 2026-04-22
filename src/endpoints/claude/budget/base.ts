@@ -77,3 +77,53 @@ export function selectPlatform(
     return filtered.sort((a, b) => (b.priority / (b.cost_per_1k + 0.0001)) - (a.priority / (a.cost_per_1k + 0.0001)))[0].platform;
   }
 }
+
+// Manus account selection strategy
+export interface ManusAccount {
+  agent_id: string;
+  daily_limit: number | null;
+  monthly_limit: number | null;
+  tokens_used_today: number;
+  tokens_used_this_month: number;
+  priority: number;
+}
+
+// Pick best Manus account for a task
+// Strategy: use free accounts (daily limit) for small stuff, paid (monthly) for complex tasks
+export function selectManusAccount(
+  accounts: ManusAccount[],
+  estimatedTokens: number,
+  taskComplexity: "simple" | "medium" | "complex" = "simple"
+): ManusAccount | null {
+  // Separate free (daily limit) from paid (monthly limit)
+  const freeAccounts = accounts.filter(a => a.daily_limit !== null);
+  const paidAccounts = accounts.filter(a => a.monthly_limit !== null);
+
+  // For simple tasks (relay, quick browse), prefer free accounts
+  if (taskComplexity === "simple") {
+    // Find free account with enough daily budget
+    const viable = freeAccounts.filter(a =>
+      (a.daily_limit! - a.tokens_used_today) >= estimatedTokens
+    ).sort((a, b) => b.priority - a.priority);
+
+    if (viable.length > 0) return viable[0];
+  }
+
+  // For complex tasks or when free exhausted, use paid account
+  if (taskComplexity === "complex" || freeAccounts.every(a =>
+    (a.daily_limit! - a.tokens_used_today) < estimatedTokens
+  )) {
+    const viablePaid = paidAccounts.filter(a =>
+      (a.monthly_limit! - a.tokens_used_this_month) >= estimatedTokens
+    ).sort((a, b) => b.priority - a.priority);
+
+    if (viablePaid.length > 0) return viablePaid[0];
+  }
+
+  // Fallback: any account with enough tokens
+  return accounts.find(a => {
+    const dailyAvail = a.daily_limit ? a.daily_limit - a.tokens_used_today : Infinity;
+    const monthlyAvail = a.monthly_limit ? a.monthly_limit - a.tokens_used_this_month : Infinity;
+    return Math.min(dailyAvail, monthlyAvail) >= estimatedTokens;
+  }) || null;
+}

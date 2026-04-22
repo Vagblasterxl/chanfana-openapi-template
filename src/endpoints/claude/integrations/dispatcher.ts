@@ -8,6 +8,7 @@ import {
   formatDiscordMessage,
   formatManusTask,
 } from "./base";
+import { selectManusAccount, ManusAccount, estimateTokens } from "../budget/base";
 
 export class DispatcherCreate extends OpenAPIRoute {
   schema = {
@@ -263,23 +264,26 @@ export class Dispatch extends OpenAPIRoute {
 export class DispatchToManus extends OpenAPIRoute {
   schema = {
     summary: "Quick dispatch to Manus",
-    description: "Send a task directly to Manus autonomous agent",
+    description: "Send a task to Manus. Automatically picks free vs paid account based on task complexity.",
     request: {
       body: {
         content: {
           "application/json": {
             schema: z.object({
               task: z.string().min(1),
-              mode: z.enum(["autonomous", "supervised", "planning"]).default("autonomous"),
+              task_type: z.enum(["lateral_relay", "browse", "research", "autonomous"]).default("autonomous"),
+              complexity: z.enum(["simple", "medium", "complex"]).default("simple"),
               context: z.string().optional(),
               callback_url: z.string().url().optional(),
+              force_account: z.string().optional(),  // force specific account
             }),
           },
         },
       },
     },
     responses: {
-      200: { description: "Task sent to Manus" },
+      200: { description: "Task queued for Manus" },
+      402: { description: "No budget available" },
     },
   };
 
@@ -288,63 +292,103 @@ export class DispatchToManus extends OpenAPIRoute {
     const db = c.env.DB;
     const now = new Date().toISOString();
 
-    // Get manus dispatcher
-    const dispatcher = await db
-      .prepare("SELECT * FROM dispatchers WHERE platform = 'manus' AND active = 1 LIMIT 1")
-      .first();
+    const estimatedTokens = estimateTokens(body.task + (body.context || "")) + 100; // +100 overhead
 
-    if (!dispatcher) {
-      return c.json({ success: false, error: "No Manus dispatcher configured" }, 404);
+    // Get all Manus accounts
+    const accountsResult = await db
+      .prepare("SELECT agent_id, daily_limit, monthly_limit, tokens_used_today, tokens_used_this_month, priority FROM token_budgets WHERE platform = 'manus' AND active = 1")
+      .all();
+
+    const accounts = (accountsResult.results || []).map(r => ({
+      agent_id: r.agent_id as string,
+      daily_limit: r.daily_limit as number | null,
+      monthly_limit: r.monthly_limit as number | null,
+      tokens_used_today: r.tokens_used_today as number,
+      tokens_used_this_month: r.tokens_used_this_month as number,
+      priority: r.priority as number,
+    })) as ManusAccount[];
+
+    // Select account
+    let selectedAccount: ManusAccount | null = null;
+
+    if (body.force_account) {
+      selectedAccount = accounts.find(a => a.agent_id === body.force_account) || null;
+    } else {
+      selectedAccount = selectManusAccount(accounts, estimatedTokens, body.complexity);
     }
 
-    // Build Manus payload
-    const payload = {
-      task: body.task,
-      mode: body.mode,
-      context: body.context,
-      callback_url: body.callback_url,
-    };
-
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-    };
-
-    const authToken = dispatcher.auth_token as string | null;
-    if (authToken) {
-      const token = authToken.startsWith("$")
-        ? String(c.env[authToken.slice(1) as keyof typeof c.env] || "")
-        : authToken;
-      headers["Authorization"] = `Bearer ${token}`;
+    if (!selectedAccount) {
+      return c.json({
+        success: false,
+        error: "No Manus account with sufficient budget",
+        estimated_tokens: estimatedTokens,
+        accounts_checked: accounts.map(a => ({
+          agent_id: a.agent_id,
+          daily_available: a.daily_limit ? a.daily_limit - a.tokens_used_today : null,
+          monthly_available: a.monthly_limit ? a.monthly_limit - a.tokens_used_this_month : null,
+        })),
+      }, 402);
     }
 
-    // Log to manus-tasks channel
+    // Create manus task
+    const taskId = `mtask_${Date.now()}_${Math.random().toString(36).substr(2, 8)}`;
+
+    await db
+      .prepare(`
+        INSERT INTO manus_tasks
+        (task_id, task_type, task_content, estimated_tokens, triggered_by_agent, status, created_at)
+        VALUES (?, ?, ?, ?, ?, 'queued', ?)
+      `)
+      .bind(
+        taskId,
+        body.task_type,
+        JSON.stringify({
+          task: body.task,
+          context: body.context,
+          callback_url: body.callback_url,
+        }),
+        estimatedTokens,
+        selectedAccount.agent_id,
+        now
+      )
+      .run();
+
+    // Update budget (reserve tokens)
+    if (selectedAccount.daily_limit) {
+      await db
+        .prepare("UPDATE token_budgets SET tokens_used_today = tokens_used_today + ? WHERE agent_id = ? AND platform = 'manus'")
+        .bind(estimatedTokens, selectedAccount.agent_id)
+        .run();
+    }
+    if (selectedAccount.monthly_limit) {
+      await db
+        .prepare("UPDATE token_budgets SET tokens_used_this_month = tokens_used_this_month + ? WHERE agent_id = ? AND platform = 'manus'")
+        .bind(estimatedTokens, selectedAccount.agent_id)
+        .run();
+    }
+
+    // Log to inbox
     await db
       .prepare(`
         INSERT INTO inbox (channel, from_agent, message_type, content, metadata, created_at)
-        VALUES ('manus-tasks', 'dispatch', 'task', ?, ?, ?)
+        VALUES ('manus-tasks', ?, 'task', ?, ?, ?)
       `)
-      .bind(body.task, JSON.stringify({ mode: body.mode }), now)
+      .bind(
+        selectedAccount.agent_id,
+        body.task,
+        JSON.stringify({ task_id: taskId, complexity: body.complexity, estimated_tokens: estimatedTokens }),
+        now
+      )
       .run();
 
-    try {
-      const response = await fetch(dispatcher.endpoint_url as string, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(payload),
-      });
-
-      const responseData = await response.json();
-
-      return c.json({
-        success: response.ok,
-        task_id: (responseData as Record<string, unknown>).task_id || (responseData as Record<string, unknown>).id,
-        status: (responseData as Record<string, unknown>).status,
-      });
-    } catch (error) {
-      return c.json({
-        success: false,
-        error: error instanceof Error ? error.message : "Failed to reach Manus",
-      }, 500);
-    }
+    return c.json({
+      success: true,
+      task_id: taskId,
+      account_used: selectedAccount.agent_id,
+      account_type: selectedAccount.daily_limit ? "free" : "paid",
+      estimated_tokens: estimatedTokens,
+      complexity: body.complexity,
+      status: "queued",
+    });
   }
 }

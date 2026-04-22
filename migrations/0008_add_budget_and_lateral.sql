@@ -136,16 +136,25 @@ CREATE INDEX idx_manus_status ON manus_tasks(status);
 CREATE INDEX idx_manus_task_id ON manus_tasks(task_id);
 
 -- Pre-seed token budgets for known platforms
-INSERT OR IGNORE INTO token_budgets (agent_id, platform, daily_limit, cost_per_1k_tokens, priority) VALUES
-('manus-free', 'manus', 300, 0, 9),                       -- 300 daily tokens, FREE, high priority use
-('gemma-local', 'gemma-4', NULL, 0, 10),                  -- unlimited, free, highest priority
-('gemma-vertex', 'gemma-4', 100000, 0.00025, 7),         -- paid tier
-('claude-sonnet-4-6', 'claude', 1000000, 0.003, 5),      -- paid
-('claude-opus-4-7', 'claude', 500000, 0.015, 3),         -- premium paid
-('slack-claude-1', 'slack', NULL, 0, 6),                  -- Slack Pro account
-('slack-claude-2', 'slack', NULL, 0, 6),
-('slack-claude-3', 'slack', NULL, 0, 6),
-('slack-claude-4', 'slack', NULL, 0, 6);
+INSERT OR IGNORE INTO token_budgets (agent_id, platform, daily_limit, monthly_limit, cost_per_1k_tokens, priority) VALUES
+-- Manus accounts (2 free @ 300/day each, 1 paid @ 8k/month)
+('manus-free-1', 'manus', 300, NULL, 0, 9),              -- FREE account #1: 300 daily tokens
+('manus-free-2', 'manus', 300, NULL, 0, 9),              -- FREE account #2: 300 daily tokens
+('manus-paid', 'manus', NULL, 8000, 0.001, 8),           -- PAID account: 8000 monthly tokens, priority use for complex tasks
+
+-- Gemma 4 (local = unlimited free, vertex = metered)
+('gemma-local', 'gemma-4', NULL, NULL, 0, 10),           -- unlimited, free, highest priority
+('gemma-vertex', 'gemma-4', 100000, NULL, 0.00025, 7),   -- paid tier
+
+-- Claude API tiers
+('claude-sonnet-4-6', 'claude', 1000000, NULL, 0.003, 5),
+('claude-opus-4-7', 'claude', 500000, NULL, 0.015, 3),
+
+-- Slack Claude instances (4 accounts)
+('slack-claude-1', 'slack', NULL, NULL, 0, 6),
+('slack-claude-2', 'slack', NULL, NULL, 0, 6),
+('slack-claude-3', 'slack', NULL, NULL, 0, 6),
+('slack-claude-4', 'slack', NULL, NULL, 0, 6);
 
 -- Add coordination channels
 INSERT OR IGNORE INTO channels (name, description, created_by) VALUES

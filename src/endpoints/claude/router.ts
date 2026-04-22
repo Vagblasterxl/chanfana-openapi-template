@@ -65,6 +65,9 @@ import { LateralSessionCreate, LateralRelay, LateralSessionList, LateralSessionR
 
 // System status
 import { SystemStatus, SystemHealth } from "./status";
+
+// UI endpoints (clickable DOM for Manus/agents)
+import { ControlPanel, FileTree, SubcommandUI } from "./ui/panel";
 import { ArtifactRead, ArtifactList as ArtifactListEndpoint } from "./artifacts/read";
 import { ArtifactPromote, ArtifactDriftCheck, ArtifactMVTRun, ArtifactFlagContamination } from "./artifacts/govern";
 
@@ -186,3 +189,9 @@ claudeRouter.post("/lateral/:sessionId/relay", LateralRelay);
 // ============ SYSTEM STATUS ============
 claudeRouter.get("/status", SystemStatus);
 claudeRouter.get("/health", SystemHealth);
+
+// ============ UI (clickable DOM for Manus/agents) ============
+claudeRouter.get("/ui", ControlPanel);
+claudeRouter.get("/ui/panel", ControlPanel);
+claudeRouter.get("/ui/files", FileTree);
+claudeRouter.get("/ui/cmd", SubcommandUI);
