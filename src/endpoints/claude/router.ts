@@ -56,6 +56,15 @@ import { DebateQueueJoin, DebateQueueLeave, DebateQueueList, DebateAutoMatch } f
 import { ReceiverCreate, ReceiverList, WebhookHandler } from "./integrations/receiver";
 import { DispatcherCreate, DispatcherList, DispatcherUpdate, Dispatch, DispatchToManus } from "./integrations/dispatcher";
 import { IntegrationBridgeCreate, IntegrationBridgeList, IntegrationBridgeTrigger } from "./integrations/bridge";
+
+// Budget tracking
+import { BudgetCreate, BudgetList, BudgetRecordUsage, BudgetResetDaily } from "./budget/track";
+
+// Lateral coordination (Manus as lubricant between Claudes)
+import { LateralSessionCreate, LateralRelay, LateralSessionList, LateralSessionRead } from "./lateral/coordinator";
+
+// System status
+import { SystemStatus, SystemHealth } from "./status";
 import { ArtifactRead, ArtifactList as ArtifactListEndpoint } from "./artifacts/read";
 import { ArtifactPromote, ArtifactDriftCheck, ArtifactMVTRun, ArtifactFlagContamination } from "./artifacts/govern";
 
@@ -161,3 +170,19 @@ claudeRouter.post("/integrations/bridge/:name/trigger", IntegrationBridgeTrigger
 
 // ============ WEBHOOK HANDLERS (catch-all for external platforms) ============
 claudeRouter.all("/hooks/:platform/:id", WebhookHandler);
+
+// ============ TOKEN BUDGETS ============
+claudeRouter.post("/budget", BudgetCreate);
+claudeRouter.get("/budget", BudgetList);
+claudeRouter.post("/budget/usage", BudgetRecordUsage);
+claudeRouter.post("/budget/reset-daily", BudgetResetDaily);
+
+// ============ LATERAL COORDINATION (Manus lubricant between Claudes) ============
+claudeRouter.post("/lateral", LateralSessionCreate);
+claudeRouter.get("/lateral", LateralSessionList);
+claudeRouter.get("/lateral/:sessionId", LateralSessionRead);
+claudeRouter.post("/lateral/:sessionId/relay", LateralRelay);
+
+// ============ SYSTEM STATUS ============
+claudeRouter.get("/status", SystemStatus);
+claudeRouter.get("/health", SystemHealth);
