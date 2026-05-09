@@ -105,6 +105,7 @@ OpenAPI docs auto-generated at `/` (Swagger UI) and `/openapi.json`.
 | `GET` | `/assets/:id` | Get single asset |
 | `PUT` | `/assets/:id` | Update asset (status, tags, lineage) |
 | `DELETE` | `/assets/:id` | Remove asset |
+| `POST` | `/assets/:id/review` | IOSM Governance + TDD Red Team gate review |
 
 **Asset fields**: `id`, `filename`, `asset_type`, `status`, `version`, `model`, `provider`, `mcp_server`, `prompt`, `local_path`, `tags`, `parent_assets`, `child_assets`, `created_at`, `updated_at`
 
@@ -353,6 +354,35 @@ chanfana-openapi-template/
 ├── CLAUDE.md                       ← AI agent project overview
 └── FILESYSTEM.md                   ← Detailed filesystem map
 ```
+
+---
+
+## System Protocols
+
+Three governance protocols enforce quality and structure across all agent operations.
+Full spec: [`.agent/protocols/system-protocols.md`](./.agent/protocols/system-protocols.md)
+
+### IOSM Governance Protocol
+**Improve · Optimize · Shrink · Modularize** — four gates every asset must
+pass before being promoted from `draft` → `approved`. Submit via
+`POST /assets/:id/review`.
+
+### SVO Knowledge Extraction
+**Subject · Verb · Object** — captured content gets parsed into structured
+triples instead of stored as freeform prose. Stored in `coordination_state`
+with `state_type: 'knowledge'`. Verbs come from a controlled vocabulary
+(generated, derived, references, supersedes, etc.).
+
+### TDD Red Team Protocol
+Define failure cases **before** generating. Asset only passes review if
+zero failure cases trigger. Standard cases per asset type encoded in
+`.meta.yml` review block.
+
+### Automation Engine Schema
+Agents acting as Automation Engines must output strict JSON matching
+[`templates/automation/engine-template.json`](./templates/automation/engine-template.json).
+Forces programmatic responses with iosm_gates, red_team, svo_triples,
+and next_actions fields.
 
 ---
 

@@ -5,6 +5,7 @@ import { AssetCreate } from "./assetCreate";
 import { AssetRead } from "./assetRead";
 import { AssetUpdate } from "./assetUpdate";
 import { AssetDelete } from "./assetDelete";
+import { AssetReview } from "./assetReview";
 
 export const assetsRouter = fromHono(new Hono());
 
@@ -13,3 +14,4 @@ assetsRouter.post("/", AssetCreate);
 assetsRouter.get("/:id", AssetRead);
 assetsRouter.put("/:id", AssetUpdate);
 assetsRouter.delete("/:id", AssetDelete);
+assetsRouter.post("/:id/review", AssetReview);

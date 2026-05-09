@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -168,8 +169,3 @@ func parseNumberedList(text string) []string {
 	return items
 }
 
-// filepath is imported via the os/path/filepath path above
-// but we need an explicit reference for the compiler
-func init() {
-	_ = filepath.Join
-}
