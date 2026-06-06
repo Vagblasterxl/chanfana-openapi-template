@@ -48,13 +48,19 @@ studio. The single unified coordination endpoint for any Claude instance.
 - `POST /state/update` — upsert coordination state
 - `GET /state/:id` — read state by ID
 - `GET /state` — list state objects
+- `POST /knowledge/extract` — ingest SVO triples into knowledge graph
+- `GET /knowledge/query` — search triples by subject/object/verb/asset
+- `GET /knowledge/graph/:entity` — get entity neighborhood graph
+- `POST /sync/snapshot` — push coordination snapshot to R2
+- `GET /sync/snapshot` — pull latest snapshot from R2
 
 ## System Protocols (mandatory)
 See `.agent/protocols/system-protocols.md` for full spec.
 - **IOSM** — Improve, Optimize, Shrink, Modularize. Four gates that govern
   every asset's transition from `draft` → `approved`. Run via `POST /assets/:id/review`.
 - **SVO** — Subject·Verb·Object knowledge extraction. All ingested content
-  becomes structured triples in `coordination_state` (state_type=knowledge).
+  becomes structured triples in `knowledge_triples` table. Controlled verb
+  vocabulary. Query via `/knowledge/query` and `/knowledge/graph/:entity`.
 - **TDD Red Team** — Define failure cases before generating. Asset only
   passes if zero failure cases trigger.
 
@@ -68,7 +74,7 @@ rejected. Schema enforces: protocol_version, agent_id, task, status, result
 - TypeScript strict, Zod validation, Chanfana D1 endpoints
 - YAML for metadata/config, `.meta.yml` sidecars for assets
 - Asset IDs: `{type}-{YYYYMMDD}-{seq}` (e.g., `img-20260218-001`)
-- Auth: `Authorization: Bearer ${API_KEY}` on `/agents/*`, `/messages/*`, `/state/*`
+- Auth: `Authorization: Bearer ${API_KEY}` on `/agents/*`, `/messages/*`, `/state/*`, `/knowledge/*`, `/sync/*`
 - See `.agent/conventions.md` for full list
 
 ## Building Locally

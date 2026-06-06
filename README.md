@@ -151,11 +151,30 @@ All require `Authorization: Bearer <API_KEY>` header.
 
 **State fields**: `id`, `state_type` (session/pipeline/global), `active_agents` (JSON array), `pending_tasks` (JSON array), `shared_context` (JSON object)
 
+#### Knowledge (SVO Knowledge Graph)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/knowledge/extract` | Ingest SVO triples into knowledge graph |
+| `GET` | `/knowledge/query` | Search triples by subject, object, verb, or source asset |
+| `GET` | `/knowledge/graph/:entity` | Get entity neighborhood (all connections) |
+
+**Triple fields**: `id`, `subject`, `verb` (controlled vocabulary), `object`, `context` (JSON), `source_task`, `source_asset`, `created_by`, `created_at`
+
+**SVO Verbs**: `generated`, `derived`, `composed`, `transcribed`, `narrated`, `created`, `updated`, `approved`, `published`, `archived`, `requested`, `delegated`, `received`, `acknowledged`, `references`, `cites`, `contradicts`, `supersedes`, `extends`
+
+#### Sync (R2 Cross-Worker State)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/sync/snapshot` | Export agents + messages + state + triples to R2 |
+| `GET` | `/sync/snapshot` | Pull latest coordination snapshot from R2 |
+
 ---
 
 ## Database Schema
 
-Three migrations create six tables:
+Four migrations create seven tables:
 
 ```sql
 -- 0001: Tasks (template CRUD example)
@@ -171,6 +190,11 @@ assets (id TEXT PK, filename, asset_type, status, version, model,
 agents (id TEXT PK, name, type, status, last_heartbeat)
 messages (id TEXT PK, sender, recipient, message_type, payload, created_at, status)
 coordination_state (id TEXT PK, state_type, active_agents, pending_tasks, shared_context)
+
+-- 0004: Knowledge Graph
+knowledge_triples (id TEXT PK, subject, verb, object, context,
+                   source_task, source_asset, created_by, created_at)
+  + indexes on subject, object, verb, source_asset
 ```
 
 ---
@@ -308,9 +332,11 @@ chanfana-openapi-template/
 │       ├── assets/                 ← Asset catalog (5 endpoints)
 │       ├── agents/                 ← Agent coordination (5 endpoints)
 │       ├── messages/               ← Inter-agent messaging (3 endpoints)
-│       └── state/                  ← Coordination state (3 endpoints)
+│       ├── state/                  ← Coordination state (3 endpoints)
+│       ├── knowledge/             ← SVO knowledge graph (3 endpoints)
+│       └── sync/                  ← R2 cross-worker sync (2 endpoints)
 │
-├── migrations/                     ← D1 schema migrations (3)
+├── migrations/                     ← D1 schema migrations (4)
 ├── tests/                          ← Vitest integration tests
 │
 ├── media/                          ← Generated assets + metadata
@@ -369,9 +395,11 @@ pass before being promoted from `draft` → `approved`. Submit via
 
 ### SVO Knowledge Extraction
 **Subject · Verb · Object** — captured content gets parsed into structured
-triples instead of stored as freeform prose. Stored in `coordination_state`
-with `state_type: 'knowledge'`. Verbs come from a controlled vocabulary
-(generated, derived, references, supersedes, etc.).
+triples instead of stored as freeform prose. Stored in dedicated
+`knowledge_triples` table with indexes on subject, object, and verb.
+Ingest via `POST /knowledge/extract`, query via `GET /knowledge/query`,
+explore entity graphs via `GET /knowledge/graph/:entity`. Verbs come from
+a controlled vocabulary (generated, derived, references, supersedes, etc.).
 
 ### TDD Red Team Protocol
 Define failure cases **before** generating. Asset only passes review if
@@ -408,7 +436,7 @@ and next_actions fields.
 
 ### Worker API
 
-Protected routes (`/agents/*`, `/messages/*`, `/state/*`) require:
+Protected routes (`/agents/*`, `/messages/*`, `/state/*`, `/knowledge/*`, `/sync/*`) require:
 
 ```
 Authorization: Bearer symphony-ken-2026
@@ -434,9 +462,15 @@ npm run test          # Full test suite (dry-run deploy + vitest)
 
 Tests live in `tests/integration/` and cover:
 - Full CRUD lifecycle for tasks (create, read, list, update, delete)
+- Agent register/upsert, heartbeat, list, read, delete
+- Message send/receive, mark_read flow, multiple message types
+- State upsert, read, list, knowledge-type state
+- SVO knowledge extraction (single + batch), query (by subject/verb/object), entity graph
+- IOSM + TDD Red Team review (approve, gate fail, red team fail, 404)
+- Auth middleware (401 missing token, 403 wrong token)
+- Health check with agent count validation
 - Input validation and error handling
-- 404 responses for missing resources
-- Search functionality
+- 45 tests across 6 test files
 
 Test setup auto-applies all migrations to a local D1 instance.
 
