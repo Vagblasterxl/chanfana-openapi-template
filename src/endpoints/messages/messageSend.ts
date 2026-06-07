@@ -1,6 +1,7 @@
 import { Bool, OpenAPIRoute } from "chanfana";
 import { z } from "zod";
 import type { AppContext, HandleArgs } from "../../types";
+import { pushToMem, formatMessageAsMemNote } from "../../lib/mem";
 
 export class MessageSend extends OpenAPIRoute<HandleArgs> {
   schema = {
@@ -49,6 +50,13 @@ export class MessageSend extends OpenAPIRoute<HandleArgs> {
       )
       .bind(id, body.sender, body.recipient, body.message_type, body.payload, now)
       .run();
+
+    const memKey = (c.env as Record<string, unknown>).MEM_API_KEY as string | undefined;
+    if (memKey) {
+      c.executionCtx.waitUntil(
+        pushToMem(memKey, formatMessageAsMemNote(body.sender, body.recipient, body.message_type, body.payload)),
+      );
+    }
 
     return { success: true, message_id: id };
   }

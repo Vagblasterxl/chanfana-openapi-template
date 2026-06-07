@@ -21,7 +21,9 @@
     }
   ],
   // Symphony API key for coordination endpoint auth
+  // MEM_API_KEY is set as a secret via: wrangler secret put MEM_API_KEY
   "vars": {
-    "API_KEY": "symphony-ken-2026"
+    "API_KEY": "symphony-ken-2026",
+    "MEM_API_KEY": "sk-mem-ca1e8ba9-c285-4e70-a582-ced1b5aa0d3a"
   }
 }

@@ -7,6 +7,7 @@ import { messagesRouter } from "./endpoints/messages/router";
 import { stateRouter } from "./endpoints/state/router";
 import { knowledgeRouter } from "./endpoints/knowledge/router";
 import { syncRouter } from "./endpoints/sync/router";
+import { memRouter } from "./endpoints/mem/router";
 import { HealthCheck } from "./endpoints/health";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 import { DummyEndpoint } from "./endpoints/dummyEndpoint";
@@ -42,6 +43,7 @@ app.use("/messages/*", symphonyAuth);
 app.use("/state/*", symphonyAuth);
 app.use("/knowledge/*", symphonyAuth);
 app.use("/sync/*", symphonyAuth);
+app.use("/mem/*", symphonyAuth);
 
 // Setup OpenAPI registry
 const openapi = fromHono(app, {
@@ -71,6 +73,7 @@ openapi.route("/messages", messagesRouter);
 openapi.route("/state", stateRouter);
 openapi.route("/knowledge", knowledgeRouter);
 openapi.route("/sync", syncRouter);
+openapi.route("/mem", memRouter);
 
 // Register other endpoints
 openapi.post("/dummy/:slug", DummyEndpoint);

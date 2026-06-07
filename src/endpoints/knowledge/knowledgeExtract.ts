@@ -2,6 +2,7 @@ import { Bool, OpenAPIRoute } from "chanfana";
 import { z } from "zod";
 import type { AppContext, HandleArgs } from "../../types";
 import { SVO_VERBS } from "./base";
+import { pushToMem, formatTripleAsMemNote } from "../../lib/mem";
 
 export class KnowledgeExtract extends OpenAPIRoute<HandleArgs> {
   schema = {
@@ -75,6 +76,14 @@ export class KnowledgeExtract extends OpenAPIRoute<HandleArgs> {
           now,
         )
         .run();
+    }
+
+    const memKey = (c.env as Record<string, unknown>).MEM_API_KEY as string | undefined;
+    if (memKey) {
+      const batchContent = body.triples
+        .map((t) => formatTripleAsMemNote(t.subject, t.verb, t.object, t.context as Record<string, unknown>, body.source_asset ?? undefined))
+        .join("\n\n---\n\n");
+      c.executionCtx.waitUntil(pushToMem(memKey, batchContent));
     }
 
     return { success: true, stored: tripleIds.length, triple_ids: tripleIds };
