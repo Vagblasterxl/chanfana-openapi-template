@@ -53,6 +53,15 @@ studio. The single unified coordination endpoint for any Claude instance.
 - `GET /knowledge/graph/:entity` — get entity neighborhood graph
 - `POST /sync/snapshot` — push coordination snapshot to R2
 - `GET /sync/snapshot` — pull latest snapshot from R2
+- `POST /mem/note` — push a note to Mem.ai shared memory
+- `POST /legal/ramble` — ingest a raw voice/text dump; auto-extract case data
+- `GET /legal/rambles` — list rambles (`?unprocessed=true` for unstructured)
+- `GET /legal/timeline` — case timeline ordered by date
+- `GET /legal/parties` — parties (`?role=` filter)
+- `GET /legal/evidence` — evidence inventory (`?status=` filter)
+- `GET/POST /legal/claims` — claims/causes of action; POST attaches statutes
+- `GET/POST /legal/deadlines` — SOL clock with days-remaining; POST adds a deadline
+- `GET /legal/package` — assemble the full lawyer-ready case package (markdown)
 
 ## System Protocols (mandatory)
 See `.agent/protocols/system-protocols.md` for full spec.
@@ -69,6 +78,24 @@ Agents acting as Automation Engines MUST output JSON matching
 `templates/automation/engine-template.json`. Conversational responses are
 rejected. Schema enforces: protocol_version, agent_id, task, status, result
 (with iosm_gates, red_team, svo_triples), and next_actions.
+
+## Legal Case Builder (Ramble Scrambler)
+The `/legal/*` endpoints turn unstructured voice/text rambles into a
+lawyer-ready case file. Flow: `POST /legal/ramble` with `raw_text` (optionally
+with a pre-parsed `extract` block) → events, parties, evidence, claims, and
+deadlines land in dedicated D1 tables (migration `0005`). Any Claude can pull
+unprocessed rambles via `GET /legal/rambles?unprocessed=true`, structure them,
+and re-ingest. `GET /legal/package` assembles everything into one markdown
+document (timeline, parties, claims with statutes, evidence inventory, SOL
+clock, attorney intake checklist). Every ingest and package push tags Mem with
+`#legal`. Not legal advice — every citation must be verified.
+
+## Claude ↔ Claude Git Relay
+`relay/` is a zero-infrastructure message bus between Claude instances on
+different machines. Each writes a JSON message into `relay/inbox/`, commits, and
+pushes; the other pulls and responds. `relay/poll.sh` (run with `AGENT_ID=...`)
+polls on an interval for the tag-team cadence. This is the training-wheels
+version of `/messages/send` — it works today over GitHub with no egress changes.
 
 ## Conventions
 - TypeScript strict, Zod validation, Chanfana D1 endpoints

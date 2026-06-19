@@ -170,11 +170,34 @@ All require `Authorization: Bearer <API_KEY>` header.
 | `POST` | `/sync/snapshot` | Export agents + messages + state + triples to R2 |
 | `GET` | `/sync/snapshot` | Pull latest coordination snapshot from R2 |
 
+#### Mem (Shared Memory)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/mem/note` | Push a note to Mem.ai so it persists across all Claude sessions |
+
+#### Legal (Ramble Scrambler)
+
+Turn unstructured voice/text dumps into a lawyer-ready case file.
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/legal/ramble` | Ingest a raw ramble; auto-extract timeline, parties, evidence, claims, deadlines |
+| `GET` | `/legal/rambles` | List rambles (`?unprocessed=true` for unstructured dumps awaiting pickup) |
+| `GET` | `/legal/timeline` | Case timeline ordered by date |
+| `GET` | `/legal/parties` | Parties (`?role=plaintiff\|defendant\|witness\|...`) |
+| `GET` | `/legal/evidence` | Evidence inventory (`?status=mentioned\|secured\|...`) |
+| `GET` | `/legal/claims` | Legal claims / causes of action |
+| `POST` | `/legal/claims` | Add/update a claim with a researched statute (upsert by id) |
+| `GET` | `/legal/deadlines` | Deadlines with computed days-remaining (SOL clock) |
+| `POST` | `/legal/deadlines` | Add a deadline to the SOL clock |
+| `GET` | `/legal/package` | Assemble the full case package as markdown (`?case_name=`, `?push_to_mem=true`) |
+
 ---
 
 ## Database Schema
 
-Four migrations create seven tables:
+Five migrations create twelve tables:
 
 ```sql
 -- 0001: Tasks (template CRUD example)
@@ -195,6 +218,19 @@ coordination_state (id TEXT PK, state_type, active_agents, pending_tasks, shared
 knowledge_triples (id TEXT PK, subject, verb, object, context,
                    source_task, source_asset, created_by, created_at)
   + indexes on subject, object, verb, source_asset
+
+-- 0005: Legal Case Builder (Ramble Scrambler)
+legal_rambles   (id TEXT PK, raw_text, source, agent_id, processed, created_at)
+legal_timeline  (id TEXT PK, ramble_id, event_date, event_description,
+                 parties_involved, evidence_refs, significance, created_at)
+legal_parties   (id TEXT PK, name, role, description, contact_info,
+                 first_mentioned_in, created_at)
+legal_evidence  (id TEXT PK, ramble_id, description, evidence_type, location,
+                 status, supports_claim, created_at)
+legal_claims    (id TEXT PK, claim_type, statute, statute_text,
+                 facts_supporting, evidence_refs, status, created_at)
+legal_deadlines (id TEXT PK, deadline_date, description, claim_id, status, created_at)
+  + indexes on processed, event_date, role, status, deadline_date
 ```
 
 ---
@@ -334,7 +370,9 @@ chanfana-openapi-template/
 │       ├── messages/               ← Inter-agent messaging (3 endpoints)
 │       ├── state/                  ← Coordination state (3 endpoints)
 │       ├── knowledge/             ← SVO knowledge graph (3 endpoints)
-│       └── sync/                  ← R2 cross-worker sync (2 endpoints)
+│       ├── sync/                  ← R2 cross-worker sync (2 endpoints)
+│       ├── mem/                   ← Mem.ai shared memory (1 endpoint)
+│       └── legal/                 ← Ramble Scrambler case builder (10 endpoints)
 │
 ├── migrations/                     ← D1 schema migrations (4)
 ├── tests/                          ← Vitest integration tests
@@ -436,7 +474,7 @@ and next_actions fields.
 
 ### Worker API
 
-Protected routes (`/agents/*`, `/messages/*`, `/state/*`, `/knowledge/*`, `/sync/*`) require:
+Protected routes (`/agents/*`, `/messages/*`, `/state/*`, `/knowledge/*`, `/sync/*`, `/mem/*`, `/legal/*`) require:
 
 ```
 Authorization: Bearer symphony-ken-2026
@@ -466,11 +504,12 @@ Tests live in `tests/integration/` and cover:
 - Message send/receive, mark_read flow, multiple message types
 - State upsert, read, list, knowledge-type state
 - SVO knowledge extraction (single + batch), query (by subject/verb/object), entity graph
+- Legal Ramble Scrambler: ingest (raw + structured), rambles list, timeline, parties, evidence, claims upsert, deadlines/SOL clock, case package assembly
 - IOSM + TDD Red Team review (approve, gate fail, red team fail, 404)
 - Auth middleware (401 missing token, 403 wrong token)
 - Health check with agent count validation
 - Input validation and error handling
-- 45 tests across 6 test files
+- 56 tests across 7 test files
 
 Test setup auto-applies all migrations to a local D1 instance.
 
