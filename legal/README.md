@@ -20,10 +20,17 @@ legal/
     claims.json       ← causes of action + statutes
     deadlines.json    ← statute-of-limitations clock
   rambles/            ← raw transcripts, one file per dump
+  ca-employment-law.json  ← verified CA employment / workers' comp statute reference
+  CA-EMPLOYMENT-LAW.md    ← readable version of the reference + sources
+  suggest-statutes.mjs    ← match a ramble to candidate statutes + compute SOL
   ingest.mjs          ← raw ramble in → structured data out
   assemble-package.mjs← all data → one lawyer-ready markdown doc
   CASE-PACKAGE.md     ← the generated deliverable (after you run assemble)
 ```
+
+**Focus:** California employment law — wage & hour, retaliation/whistleblower,
+FEHA discrimination/harassment, wrongful termination, and workers' compensation
+(including §132a retaliation). The statute reference is scoped to exactly that.
 
 ## How to use it (the whole loop)
 
@@ -81,10 +88,16 @@ Now any other Claude (other laptop, Desktop, web) pulls and has the whole case.
 
 When Ken pastes a raw ramble about the case, a Claude instance should:
 1. Read it and pull out a clean `extract` block (timeline / parties / evidence /
-   claims / deadlines). Match real California statutes to each claim where it can.
-2. Write it to a `*.json` payload and run `node legal/ingest.mjs`.
-3. Run `node legal/assemble-package.mjs > legal/CASE-PACKAGE.md`.
-4. Commit and push.
+   claims / deadlines).
+2. Match real California statutes to each claim. Run the matcher first —
+   `node legal/suggest-statutes.mjs --anchor <termination-or-injury-date> "<ramble>"`
+   — then read `legal/CA-EMPLOYMENT-LAW.md` and keep only the statutes that
+   genuinely fit. Put the SOL deadlines into `extract.deadlines`, shortest first
+   (a §132a or workers'-comp injury clock is only **1 year** — it goes before any
+   3-year wage clock).
+3. Write it to a `*.json` payload and run `node legal/ingest.mjs`.
+4. Run `node legal/assemble-package.mjs > legal/CASE-PACKAGE.md`.
+5. Commit and push.
 
 Controlled party roles: `plaintiff`, `defendant`, `witness`, `counsel`, `judge`, `other`.
 Evidence types: `document`, `photo`, `recording`, `message`, `contract`, `receipt`, `other`.
