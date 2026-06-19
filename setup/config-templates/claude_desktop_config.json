@@ -68,6 +68,14 @@
         "MCP_SERVER_REQUEST_TIMEOUT": "55000"
       },
       "_note": "AV tool for assembly/concat. Uses Gemini for smart edits."
+    },
+    "mem": {
+      "command": "npx",
+      "args": ["-y", "@mem-ai/mcp-server"],
+      "env": {
+        "MEM_API_KEY": "PASTE_YOUR_MEM_API_KEY_HERE"
+      },
+      "_note": "Mem.ai shared memory. All Claude instances share notes via #symphony tags."
     }
   }
 }
