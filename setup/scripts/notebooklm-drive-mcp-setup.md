@@ -105,7 +105,7 @@ Add to `mcpServers` in `claude_desktop_config.json`:
     "command": "npx",
     "args": ["-y", "@mem-ai/mcp-server"],
     "env": {
-      "MEM_API_KEY": "sk-mem-ca1e8ba9-c285-4e70-a582-ced1b5aa0d3a"
+      "MEM_API_KEY": "<paste the MEM_API_KEY Ken provides — never commit it>"
     }
   }
 }

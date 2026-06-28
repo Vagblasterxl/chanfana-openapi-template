@@ -484,6 +484,12 @@ Public routes (`/health`, `/tasks/*`, `/assets/*`) require no auth.
 
 The API key is set in `wrangler.jsonc` under `vars.API_KEY`. If unset, auth is bypassed (dev mode).
 
+**Secrets — do not hardcode third-party keys.** `vars.API_KEY` is a shared dev/test
+token only. Real credentials (e.g. `MEM_API_KEY`) belong in a gitignored `.dev.vars`
+file for local dev (copy `.dev.vars.example` → `.dev.vars`), and in Cloudflare secrets
+for production (`npx wrangler secret put MEM_API_KEY`). Never commit them to
+`wrangler.jsonc` or any doc.
+
 ### MCP Servers
 
 - **Vertex AI servers**: `gcloud auth application-default login`

@@ -103,6 +103,41 @@ employer never handed over a claim form). A §132a retaliation petition is a
 
 ---
 
+## Adjuster / Insurer Misconduct — Can They Be Held Accountable?
+
+Short answer: **the conflicting information you've heard is because *both* things are
+true.** A workers'-comp adjuster lying to deny or delay a claim is **illegal** — but
+the way they're held accountable is *not* a lawsuit you file against them.
+
+| If the adjuster... | The law | What actually happens |
+|---|---|---|
+| Lies / makes a false statement to **deny** a claim or **discourage** you from filing | **Insurance Code § 1871.4** | A **crime** (wobbler; felony = 2-5 yrs prison, up to $150k fine). You *report* it — the DA's fraud unit or the CA Dept. of Insurance Fraud Division prosecutes. You're the witness, not the plaintiff. |
+| Makes a knowingly false statement **for or against** a claim | **Labor Code § 3820** | **Civil penalty** $4,000-$10,000 + up to 3x medical costs — but it's paid to the *state*, not to you. |
+| **Unreasonably delays or refuses** to pay benefits | **Labor Code § 5814** | The **WCAB** adds up to **25% or $10,000 (whichever is less)** to the delayed payment. Petition within **2 years** of when the payment was due. |
+
+**The catch — why it feels like "they can do anything":** Labor Code **§ 5814 says
+in plain text it does *not* create a civil lawsuit.** Because workers' comp is the
+**exclusive remedy** (Labor Code § 3602), an injured worker generally **cannot sue
+the adjuster for bad faith in civil court** the way you could sue, say, an auto
+insurer. The *only* party with standing to bring a civil bad-faith suit against the
+carrier is the **employer** (the policyholder). So the accountability is real but it's
+**capped and it lives inside the WCAB** — plus a criminal referral if they outright lied.
+
+**What this means for you, practically:**
+1. Document every lie/delay in writing (dates, who said what, what was denied).
+2. A delay/denial → **§ 5814 penalty petition** at the WCAB (your money lever).
+3. An outright **lie** → also a **§ 1871.4 fraud referral** to the DA / DOI Fraud
+   Division (1-800-927-4357) — that's the criminal accountability.
+4. None of these are a personal civil "bad-faith" payday — that door is closed to the
+   worker by exclusive remedy. Set expectations accordingly and let an attorney confirm
+   whether any narrow exception (e.g., a separate tort during investigation) fits.
+
+> **Not legal advice — verify with a workers' comp attorney.** Whether a delay is
+> "unreasonable" and whether a statement is "knowingly false" are fact questions an
+> attorney and the WCAB decide.
+
+---
+
 ## How a Claude uses this reference
 
 When Ken rambles about his employment situation:
@@ -135,3 +170,7 @@ package's SOL table is there so nothing lapses.
 - [Gov. Code § 12940 FEHA Protections (Setareh)](https://www.setarehlaw.com/california-government-code-12940-feha/)
 - [CACI No. 2505 — FEHA Retaliation Elements (Justia, 2026)](https://www.justia.com/trials-litigation/docs/caci/2500/2505/)
 - [103 Laws Protecting California Employees (Ottinger)](https://www.ottingerlaw.com/blog/103-laws-protecting-california-employees/)
+- [Workers' Compensation Fraud — Insurance Code § 1871.4 (Shouse)](https://www.shouselaw.com/ca/defense/fraud/workers-compensation-fraud/)
+- [Labor Code § 3820 — Workers' Comp Misrepresentation Penalty (FindLaw)](https://codes.findlaw.com/ca/labor-code/lab-sect-3820/)
+- [Labor Code § 5814 — Penalty for Unreasonable Delay/Denial (FindLaw)](https://codes.findlaw.com/ca/labor-code/lab-sect-5814/)
+- [Challenging Dishonesty in the Work Comp System (Bradford & Barthel, 2026)](https://bradfordbarthel.com/2026/04/06/challenging-dishonesty-in-the-work-comp-system/)

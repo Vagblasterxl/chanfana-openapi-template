@@ -42,8 +42,9 @@ Register yourself in the Symphony system as agent:
 5. This is the keystone. Once the Worker is live, everything else can connect.
 
 ### Priority 2 — Connect Mem (shared memory)
-The Mem API key is already in wrangler.jsonc as MEM_API_KEY:
-  sk-mem-ca1e8ba9-c285-4e70-a582-ced1b5aa0d3a
+The Mem API key is NOT stored in git. Ken provides it directly (it lives in the
+gitignored `.dev.vars` file, key name `MEM_API_KEY`). Paste the value Ken hands you
+into the Mem MCP config below — do not commit it anywhere.
 1. Confirm the Mem MCP server is configured in this Desktop's
    claude_desktop_config.json (add it if missing — see full-setup.md step 2).
 2. Push a test note to Mem confirming the Worker is live and what its URL is.

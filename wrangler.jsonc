@@ -20,10 +20,13 @@
       "bucket_name": "coordination-sync-ken"
     }
   ],
-  // Symphony API key for coordination endpoint auth
-  // MEM_API_KEY is set as a secret via: wrangler secret put MEM_API_KEY
+  // API_KEY is the shared dev/test token (the vitest suite uses this exact value).
+  // Before any real deployment, rotate it to a strong secret: wrangler secret put API_KEY
+  //
+  // MEM_API_KEY is a REAL third-party credential and must NOT be hardcoded here.
+  //   Local dev:  put it in .dev.vars (gitignored — see .dev.vars.example)
+  //   Production: npx wrangler secret put MEM_API_KEY
   "vars": {
-    "API_KEY": "symphony-ken-2026",
-    "MEM_API_KEY": "sk-mem-ca1e8ba9-c285-4e70-a582-ced1b5aa0d3a"
+    "API_KEY": "symphony-ken-2026"
   }
 }

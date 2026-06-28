@@ -1,0 +1,12 @@
+# Local secrets for `wrangler dev` / `npm run dev`.
+# Copy this file to `.dev.vars` (which is gitignored) and fill in the real values.
+# NEVER commit `.dev.vars` or paste real keys into wrangler.jsonc.
+#
+# Production equivalents are set with: npx wrangler secret put <NAME>
+
+# Mem.ai API key — shared memory across Claude instances. Get it from mem.ai settings.
+MEM_API_KEY=sk-mem-xxxxxxxx-your-key-here
+
+# Optional: override the coordination auth token for local dev.
+# Defaults to the value in wrangler.jsonc vars.API_KEY if unset.
+# API_KEY=symphony-ken-2026
