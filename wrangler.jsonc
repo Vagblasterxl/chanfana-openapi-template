@@ -10,16 +10,23 @@
     {
       "binding": "DB",
       "database_name": "openapi-template-db",
-      "database_id": "b96d67ac-a912-4416-9a47-770c627c088b"
+      // Verified 2026-07-08: this is the real openapi-template-db on the
+      // Vagblasterxl@gmail.com account (9e6e291db1bc4c877db80a30ff15e92c).
+      // Migrations 0001-0005 are applied. Deploy target = that account.
+      "database_id": "d7b93547-6fba-4766-afb3-7e39e6e36219"
     }
   ],
-  // R2 bucket for coordination file sync between workers
-  "r2_buckets": [
-    {
-      "binding": "R2_BUCKET",
-      "bucket_name": "coordination-sync-ken"
-    }
-  ],
+  // R2 is NOT enabled on the Vagblasterxl account (and enabling it is what
+  // triggers Cloudflare's billing prompt). The /sync/* endpoints detect the
+  // missing binding and return a clean 501 — everything else works without it.
+  // To re-enable later: enable R2 in the dashboard, create the bucket, then
+  // uncomment this block.
+  // "r2_buckets": [
+  //   {
+  //     "binding": "R2_BUCKET",
+  //     "bucket_name": "coordination-sync-ken"
+  //   }
+  // ],
   // API_KEY is the shared dev/test token (the vitest suite uses this exact value).
   // Before any real deployment, rotate it to a strong secret: wrangler secret put API_KEY
   //
