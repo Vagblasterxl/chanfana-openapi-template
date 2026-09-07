@@ -22,6 +22,7 @@ legal/
   rambles/            ← raw transcripts, one file per dump
   ca-employment-law.json  ← verified CA employment / workers' comp statute reference
   CA-EMPLOYMENT-LAW.md    ← readable version of the reference + sources
+  CASE-LAW.md         ← the court decisions that control retaliation + adjuster claims
   suggest-statutes.mjs    ← match a ramble to candidate statutes + compute SOL
   ingest.mjs          ← raw ramble in → structured data out
   assemble-package.mjs← all data → one lawyer-ready markdown doc
