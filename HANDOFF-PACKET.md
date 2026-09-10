@@ -32,6 +32,8 @@ SPEC: v1.0
 [DOC](H) Container resets wipe local state; GitHub is the only durable store — one reset occurred mid-session and was recovered from remote — src:S1
 [DOC](M){OPEN} Unmerged sibling branches carry parallel systems: `slack-session-VKAqM` (connectors, debate), `cloudflare-google-integration-HeGUL` (Oracle bus, Google endpoints) — src:S2 asof:2026-09-10
 
+[RECALL](M){OPEN} Operator 2026-09-10: account sprawl stems from a "google domain fiasco" he is retreating from; `assblasterxl@gmail` + `kenwsimmons@hotmail.com` "got ate", then `sessybear@gmail.com` (a hotmail replacement) "got ate" too; Assblasterxl confirmed as his account; explicitly context-only — no cures/investigation until relevant — src:S1 asof:2026-09-10
+
 ## 2. COUNTER
 Strongest case against this packet's thrust ("stack is finished, deploy is the last mile"): the stack has zero real payload and its deploy target may be phantom. No ramble of Ken's actual case was ever ingested; the relay has never carried a second machine's message; the AHK script never ran on Windows; and the account holding the prepared DB vanished from the credential set, while two OTHER symphony stacks (Assblasterxl's conductor stack, hotmail's swarm) already exist — plausibly the real center of gravity is there, and this repo is a third parallel build, not the keystone. Checked against: S3 account listings and S2 empty `legal/data/` — the counter stands as a live risk, not a refutation.
 

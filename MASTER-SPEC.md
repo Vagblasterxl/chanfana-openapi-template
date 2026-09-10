@@ -26,6 +26,14 @@ duplicate it.
 | Assblasterxl@gmail.com | `81df6339f3528e9fc2802a9b25d2e423` | Sep only. Own symphony-conductor/registry/gateway stack + `symphony-core` D1. |
 | Rogerdoger6942013@gmail.com | `b9e6ff966ce74058f2481c1f67c9f3b0` | Jul only. Nearly empty. |
 
+**Operator note (Ken, 2026-09-10, verbatim intent):** account sprawl came from a
+"google domain fiasco" he is retreating from. `assblasterxl@gmail` +
+`kenwsimmons@hotmail.com` "got ate"; `sessybear@gmail.com` (a replacement for
+the hotmail account) recently "got ate" too. Assblasterxl is confirmed HIS
+account. Do NOT investigate or attempt fixes — context only, until relevant.
+(Session MCP credentials still reached Assblasterxl + hotmail on 2026-09-10;
+"ate" ≠ necessarily unreachable. Both facts recorded, unreconciled.)
+
 ## 2. Module A — Worker API (`src/`)
 
 Hono + Chanfana + D1. Endpoints in `CLAUDE.md`. Auth:
