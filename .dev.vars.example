@@ -1,0 +1,7 @@
+# Polar webhook signing secret, copied from the webhook's settings in Polar.
+# Without it the Worker refuses every delivery to POST /polar/webhook with 503 —
+# it never falls back to accepting unverified events.
+#
+# Local:      copy this file to .dev.vars and fill it in
+# Deployed:   wrangler secret put POLAR_WEBHOOK_SECRET
+POLAR_WEBHOOK_SECRET=""

@@ -4,6 +4,13 @@
 declare namespace Cloudflare {
 	interface Env {
 		DB: D1Database;
+		/**
+		 * Polar webhook signing secret. Set with
+		 * `wrangler secret put POLAR_WEBHOOK_SECRET`. Optional in the type only
+		 * because a Worker can be deployed without it — the webhook endpoint
+		 * refuses every delivery while it is unset.
+		 */
+		POLAR_WEBHOOK_SECRET?: string;
 	}
 }
 interface Env extends Cloudflare.Env {}
