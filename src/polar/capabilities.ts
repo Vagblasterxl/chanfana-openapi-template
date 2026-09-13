@@ -6,15 +6,16 @@ import type { PolarSubscription } from "./events";
  * subscription is on, never from anything the caller sends.
  *
  * Resolution order:
- *   1. `capabilities` in the product's Polar metadata — Polar is the source of
- *      truth, so annotating a product there is all an operator has to do.
- *   2. the `polar_product_capabilities` table — a fallback for products that
- *      have not been annotated yet.
+ *   1. the product's `feature_flag` benefits, each carrying its flag in
+ *      `metadata.cap`. This is Polar's native entitlement mechanism and the
+ *      source of truth — granting a capability is attaching a benefit.
+ *   2. the `polar_product_capabilities` table — a fallback for deliveries whose
+ *      payload omits `product.benefits`, so a thin webhook body still resolves.
  *   3. nothing. An unrecognised product is a seat with no capabilities; it is
  *      recorded, it is never elevated by default.
  */
 
-export type CapabilitySource = "product_metadata" | "product_map" | "none";
+export type CapabilitySource = "product_benefits" | "product_map" | "none";
 
 export interface ResolvedCapabilities {
   capabilities: string[];
@@ -54,19 +55,33 @@ export function normalizeCapabilities(value: unknown): string[] {
   return [...seen].sort();
 }
 
-/** Capabilities declared on the product itself, if any. */
-export function capabilitiesFromProductMetadata(
+/**
+ * Capability flags attached to the product as `feature_flag` benefits. Benefits
+ * of other types — the identity licence key, the config payload — carry no
+ * capability and are ignored.
+ */
+export function capabilitiesFromProductBenefits(
   subscription: PolarSubscription,
 ): string[] {
-  return normalizeCapabilities(subscription.product?.metadata?.capabilities);
+  const flags: string[] = [];
+  for (const benefit of subscription.product?.benefits ?? []) {
+    if (benefit.type !== "feature_flag") {
+      continue;
+    }
+    const cap = benefit.metadata?.cap;
+    if (typeof cap === "string") {
+      flags.push(cap);
+    }
+  }
+  return normalizeCapabilities(flags);
 }
 
 export function resolveCapabilities(
-  fromMetadata: string[],
+  fromBenefits: string[],
   fromMap: string[] | null,
 ): ResolvedCapabilities {
-  if (fromMetadata.length > 0) {
-    return { capabilities: fromMetadata, source: "product_metadata" };
+  if (fromBenefits.length > 0) {
+    return { capabilities: fromBenefits, source: "product_benefits" };
   }
   if (fromMap && fromMap.length > 0) {
     return { capabilities: fromMap, source: "product_map" };

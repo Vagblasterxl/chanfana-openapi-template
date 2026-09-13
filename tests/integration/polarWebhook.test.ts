@@ -12,6 +12,7 @@ const SECRET = "polar_whs_test_secret";
 // Seeded by migration 0002.
 const WARDEN_PRODUCT = "2c1fb64e-717f-47f6-943f-86e8ccfe5e41";
 const RECEIVER_PRODUCT = "cb2d4696-adbc-4f92-a214-1f67c19e3b8f";
+const SEAT_PRODUCT = "882a7ac6-2cb7-482a-86f8-eed3a9680b9b";
 
 function base64(bytes: Uint8Array): string {
   let binary = "";
@@ -323,13 +324,20 @@ describe("Polar entitlement application", () => {
     );
   });
 
-  it("prefers capabilities declared in the product's Polar metadata", async () => {
+  it("reads capabilities from the product's feature_flag benefits", async () => {
     const { response } = await deliver(
       subscriptionEvent("subscription.updated", {
         product: {
           id: WARDEN_PRODUCT,
           name: "OMEGA Role - Warden",
-          metadata: { capabilities: "Registry.Admin, vault.read, vault.read" },
+          benefits: [
+            // Non-capability benefits carry no flag and must be ignored.
+            { type: "license_keys", description: "Agent identity key" },
+            { type: "custom", description: "Agent config payload" },
+            { type: "feature_flag", metadata: { cap: "Registry.Admin" } },
+            { type: "feature_flag", metadata: { cap: "vault.read" } },
+            { type: "feature_flag", metadata: { cap: "vault.read" } },
+          ],
         },
       }),
     );
@@ -339,15 +347,43 @@ describe("Polar entitlement application", () => {
     expect(body.result.capabilities).toEqual(["registry.admin", "vault.read"]);
 
     const stored = await readEntitlements();
-    expect(stored.result[0].source).toBe("product_metadata");
+    expect(stored.result[0].source).toBe("product_benefits");
   });
 
-  it("grants nothing for a product with no mapping and no metadata", async () => {
+  it("falls back to the product map when the payload omits benefits", async () => {
+    // Warden's benefits are absent here, so the seeded map has to answer.
+    const { response } = await deliver(subscriptionEvent("subscription.updated"));
+
+    const body = await response.json<{ result: any }>();
+    expect(body.result.capabilities).toEqual([
+      "mesh.dispatch",
+      "registry.admin",
+      "vault.read",
+    ]);
+
+    const stored = await readEntitlements();
+    expect(stored.result[0].source).toBe("product_map");
+  });
+
+  it("resolves the seat product, which grants only mesh.dispatch", async () => {
+    const { response } = await deliver(
+      subscriptionEvent("subscription.updated", {
+        id: "sub_seat",
+        product_id: SEAT_PRODUCT,
+        product: { id: SEAT_PRODUCT, name: "OMEGA Agent Seat" },
+      }),
+    );
+
+    const body = await response.json<{ result: any }>();
+    expect(body.result.capabilities).toEqual(["mesh.dispatch"]);
+  });
+
+  it("grants nothing for a product with no benefits and no mapping", async () => {
     const { response } = await deliver(
       subscriptionEvent("subscription.updated", {
         id: "sub_unmapped",
         product_id: "00000000-0000-4000-8000-000000000000",
-        product: { id: "00000000-0000-4000-8000-000000000000", name: "Agent Seat" },
+        product: { id: "00000000-0000-4000-8000-000000000000", name: "Unknown" },
       }),
     );
 

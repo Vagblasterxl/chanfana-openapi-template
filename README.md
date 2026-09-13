@@ -87,9 +87,12 @@ do.
 
 For each `subscription.*` event, in order:
 
-1. `capabilities` in the product's Polar metadata — a string
-   (`"registry.admin, vault.read"`) or an array. Polar stays the source of truth.
-2. the `polar_product_capabilities` table, for products not annotated in Polar.
+1. the product's `feature_flag` benefits, each carrying its flag name in
+   `metadata.cap`. This is Polar's own entitlement mechanism, so granting a
+   capability is attaching a benefit — nothing else has to be edited. Benefits
+   of other types (licence keys, config payloads) are ignored.
+2. the `polar_product_capabilities` table, for deliveries whose payload omits
+   `product.benefits`, so a thin webhook body still resolves.
 3. nothing. An unrecognised product is recorded as a seat with no capabilities;
    it is never elevated by default.
 

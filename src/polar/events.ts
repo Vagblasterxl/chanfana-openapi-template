@@ -16,11 +16,25 @@ const metadataValue = z.union([
 
 const metadata = z.record(metadataValue);
 
+/**
+ * A Polar benefit. Capability flags ride on `feature_flag` benefits, with the
+ * flag name in `metadata.cap` — that is Polar's native entitlement mechanism
+ * and the only place these products declare capabilities.
+ */
+const polarBenefit = z
+  .object({
+    type: z.string(),
+    description: z.string().optional(),
+    metadata: metadata.optional(),
+  })
+  .passthrough();
+
 const polarProduct = z
   .object({
     id: z.string(),
     name: z.string().optional(),
     metadata: metadata.optional(),
+    benefits: z.array(polarBenefit).optional(),
   })
   .passthrough();
 

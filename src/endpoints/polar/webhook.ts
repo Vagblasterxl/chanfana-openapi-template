@@ -2,7 +2,7 @@ import { contentJson, OpenAPIRoute } from "chanfana";
 import { z } from "zod";
 import type { AppContext } from "../../types";
 import {
-  capabilitiesFromProductMetadata,
+  capabilitiesFromProductBenefits,
   resolveCapabilities,
 } from "../../polar/capabilities";
 import {
@@ -169,12 +169,12 @@ export class PolarWebhook extends OpenAPIRoute {
     }
     const subscription = parsedSubscription.data;
 
-    const fromMetadata = capabilitiesFromProductMetadata(subscription);
+    const fromBenefits = capabilitiesFromProductBenefits(subscription);
     const fromMap =
-      fromMetadata.length > 0
+      fromBenefits.length > 0
         ? null
         : await lookupProductCapabilities(c.env.DB, subscription.product_id);
-    const resolved = resolveCapabilities(fromMetadata, fromMap);
+    const resolved = resolveCapabilities(fromBenefits, fromMap);
 
     // A subscription that is not in good standing keeps its row for audit but
     // grants nothing.
