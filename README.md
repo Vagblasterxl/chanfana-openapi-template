@@ -111,6 +111,98 @@ resurrect stale state.
 | `GET /polar/entitlements` | List rows; filter by `customer`, `product_id`, `active`. |
 | `GET /polar/entitlements/{customer}` | Union of capability flags across a customer's granting subscriptions — the answer an authorization check needs. Accepts a Polar customer id or an external customer id. |
 
+## Discord slash commands
+
+`POST /discord/interactions` is a Discord [interactions
+endpoint](https://discord.com/developers/docs/interactions/receiving-and-responding).
+It turns `/omega` slash commands into messages on the `comms_messages` bus the
+agents already read, and authorizes each one against the Polar entitlements
+above.
+
+Interactions was the only workable ingress: a Discord *webhook* posts **into**
+Discord and cannot receive anything, and a bot gateway needs a persistent
+WebSocket a Worker cannot hold. Interactions is plain request/response.
+
+### Required configuration
+
+```bash
+npx wrangler secret put DISCORD_PUBLIC_KEY     # application → General Information
+npx wrangler secret put DISCORD_OPERATOR_IDS   # comma-separated Discord user ids
+```
+
+**While `DISCORD_PUBLIC_KEY` is unset, every interaction is rejected with
+`503`.** Verification is Ed25519 over `{x-signature-timestamp}{rawBody}`, with a
+five-minute timestamp tolerance. There is no unverified path — and Discord will
+not accept an interactions URL at all until the endpoint answers a deliberately
+mis-signed probe with a non-2xx.
+
+Discord retries an interaction it got no response to within three seconds, so
+each interaction id is claimed in `discord_interactions` before the command
+runs. A lost reply therefore cannot turn one `/omega send` into two bus rows.
+
+### Registering the commands
+
+Discord learns the command tree from its API, not from this endpoint.
+`GET /discord/commands` serves the definitions from the same module the
+dispatcher implements, so the registered surface cannot drift from the handled
+one (a test asserts it):
+
+```bash
+curl -s https://<worker>/discord/commands > commands.json
+curl -X PUT \
+  -H "Authorization: Bot $DISCORD_BOT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d @commands.json \
+  "https://discord.com/api/v10/applications/$DISCORD_APPLICATION_ID/commands"
+```
+
+### Authorization
+
+```
+Discord user id  ->  discord_identities  ->  Polar customer  ->  capabilities
+```
+
+A Discord user id proves only who is typing. What they may *do* comes from the
+Polar subscription their binding points at — the same source the rest of the
+mesh authorizes against — so cancelling a subscription in Polar revokes their
+Discord commands with nothing else to remember to turn off. An unbound account
+holds no capabilities, which is the intended default for everyone who merely
+happens to be in the guild.
+
+| Command | Requires |
+| --- | --- |
+| `/omega status` | nothing |
+| `/omega whoami` | nothing |
+| `/omega send recipient message [type]` | `comms.send` |
+| `/omega inbox [recipient] [limit]` | `comms.send` |
+| `/omega ack id` | `comms.send`, and the message must be addressed to your agent |
+| `/omega bind agent [customer] [user] [username]` | an id in `DISCORD_OPERATOR_IDS`, or `registry.admin` |
+
+`DISCORD_OPERATOR_IDS` grants exactly one command. It exists because before any
+binding exists nobody can hold `registry.admin`, so nobody could create the
+first binding; it is a Worker secret, so the list is not forgeable from Discord.
+
+`/omega ack` is scoped to the caller's own agent. Bus ids are guessable
+integers, and the reply does not distinguish "no such message" from "addressed
+to someone else", so the command cannot be used to silence or enumerate another
+agent's queue.
+
+### Bus payload
+
+`/omega send` writes the shape the existing `discord-relay` consumers already
+read — `text`, `from`, `channel_id`, `via: "discord-relay"` — and adds the
+provenance a hand-rolled relay had no way to carry: `discord_user_id`,
+`discord_username`, `guild_id`, `interaction_id`.
+
+The `comms_messages` column list in migration `0003` mirrors the live
+`polar-mcp` Worker byte for byte, so this implementation can be pointed at that
+same D1 database without a schema divergence.
+
+`classification` is left `NULL` here. The other Worker fills it from a Workers
+AI call, which this path deliberately does not make: Discord's response deadline
+is three seconds, and a model call inside it would risk the timeout — and a
+timeout is a retry, which is a second bus row.
+
 ## Testing
 
 This template includes integration tests using [Vitest](https://vitest.dev/). To run the tests locally:
@@ -126,5 +218,7 @@ Test files are located in the `tests/` directory, with examples demonstrating ho
 1. Your main router is defined in `src/index.ts`.
 2. Each endpoint has its own file in `src/endpoints/`.
 3. Polar webhook verification, capability resolution, and D1 access live in `src/polar/`.
-4. Integration tests are located in the `tests/` directory.
-5. For more information read the [chanfana documentation](https://chanfana.com/), [Hono documentation](https://hono.dev/docs), and [Vitest documentation](https://vitest.dev/guide/).
+4. Discord signature verification, command parsing, dispatch, and the command
+   definitions live in `src/discord/`.
+5. Integration tests are located in the `tests/` directory.
+6. For more information read the [chanfana documentation](https://chanfana.com/), [Hono documentation](https://hono.dev/docs), and [Vitest documentation](https://vitest.dev/guide/).

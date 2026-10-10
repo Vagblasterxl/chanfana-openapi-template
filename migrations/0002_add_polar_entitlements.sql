@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS polar_entitlements (
     active INTEGER NOT NULL,
     -- JSON array of capability flags, e.g. ["registry.admin","vault.read"]
     capabilities TEXT NOT NULL,
-    -- Where the capability set came from: "product_metadata" | "product_map" | "none"
+    -- Where the capability set came from: "product_benefits" | "product_map" | "none"
     source TEXT NOT NULL,
     event_type TEXT NOT NULL,
     event_id TEXT NOT NULL,
