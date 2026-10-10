@@ -4,6 +4,28 @@
 declare namespace Cloudflare {
 	interface Env {
 		DB: D1Database;
+		/**
+		 * Polar webhook signing secret. Set with
+		 * `wrangler secret put POLAR_WEBHOOK_SECRET`. Optional in the type only
+		 * because a Worker can be deployed without it — the webhook endpoint
+		 * refuses every delivery while it is unset.
+		 */
+		POLAR_WEBHOOK_SECRET?: string;
+		/**
+		 * Discord application public key, from the application's General
+		 * Information page. Set with
+		 * `wrangler secret put DISCORD_PUBLIC_KEY`. Optional in the type only
+		 * because a Worker can be deployed without it — the interactions
+		 * endpoint refuses every request while it is unset.
+		 */
+		DISCORD_PUBLIC_KEY?: string;
+		/**
+		 * Discord user ids allowed to run `/omega bind`, comma-separated. Only
+		 * breaks the bootstrap cycle: before any binding exists nobody can hold
+		 * `registry.admin`, so nobody could create the first binding. Every
+		 * other command authorizes against Polar entitlements.
+		 */
+		DISCORD_OPERATOR_IDS?: string;
 	}
 }
 interface Env extends Cloudflare.Env {}
