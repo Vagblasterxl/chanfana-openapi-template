@@ -1,0 +1,35 @@
+formats:
+  hero-banner:
+    description: "Website hero banner"
+    aspect_ratio: "16:9"
+    dimensions: "1920x1080"
+    model: "imagen-3"
+    mcp_server: "mcp-imagen"
+
+  social-post:
+    description: "Social media image post"
+    aspect_ratio: "1:1"
+    dimensions: "1080x1080"
+    model: "imagen-3"
+    mcp_server: "mcp-imagen"
+
+  og-image:
+    description: "Open Graph / link preview image"
+    aspect_ratio: "1.91:1"
+    dimensions: "1200x630"
+    model: "imagen-3"
+    mcp_server: "mcp-imagen"
+
+  portrait:
+    description: "Portrait orientation"
+    aspect_ratio: "3:4"
+    dimensions: "900x1200"
+    model: "imagen-3"
+    mcp_server: "mcp-imagen"
+
+  gemini-creative:
+    description: "Creative image via Gemini multimodal (editing, style transfer, text-in-image)"
+    aspect_ratio: "1:1"
+    dimensions: "1024x1024"
+    model: "gemini-2.5-flash"
+    mcp_server: "mcp-gemini"

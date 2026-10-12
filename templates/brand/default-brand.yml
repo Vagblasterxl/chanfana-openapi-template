@@ -1,0 +1,42 @@
+brand:
+  name: "Symphony Creative Studio"
+
+  visual:
+    color_palette:
+      primary: "#1a1a2e"
+      secondary: "#16213e"
+      accent: "#0f3460"
+      highlight: "#e94560"
+    style_keywords:
+      - "modern"
+      - "cinematic"
+      - "clean"
+      - "professional"
+      - "high contrast"
+    negative_prompts:
+      - "blurry"
+      - "low quality"
+      - "watermark"
+      - "text overlay"
+      - "amateur"
+      - "distorted"
+      - "oversaturated"
+
+  audio:
+    default_voice: "en-US-Chirp3-HD-Fenrir"
+    music_mood: "inspiring, professional, modern"
+    music_genres:
+      - "cinematic"
+      - "electronic"
+      - "ambient"
+
+  video:
+    default_aspect: "16:9"
+    default_duration: 8
+    default_fps: 24
+    intro_duration: 3
+    outro_duration: 2
+
+  content:
+    tone: "confident, knowledgeable, approachable"
+    target_audience: "tech-savvy professionals"
