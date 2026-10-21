@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "SessionStart": [
+      { "hooks": [ { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh\"" } ] }
+    ],
+    "PreToolUse": [
+      { "matcher": "Bash", "hooks": [ { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-bash.sh\"" } ] },
+      { "matcher": "Edit|Write|MultiEdit", "hooks": [ { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-secrets.sh\"" } ] }
+    ],
+    "PostToolUse": [
+      { "matcher": "Edit|Write|MultiEdit", "hooks": [ { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/post-edit-build.sh\"" } ] }
+    ],
+    "Stop": [
+      { "hooks": [ { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop-git-check.sh\"" } ] }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npm test)", "Bash(npm test:*)", "Bash(npm ci)", "Bash(npm install)",
+      "Bash(npx wrangler deploy --dry-run)", "Bash(npx wrangler deploy --dry-run:*)",
+      "Bash(npx vitest:*)", "Bash(node legal/*)", "Bash(node legal/:*)",
+      "Bash(git status:*)", "Bash(git log:*)", "Bash(git diff:*)", "Bash(git fetch:*)",
+      "Bash(git add:*)", "Bash(git commit:*)", "Bash(git push -u origin:*)",
+      "Bash(gh pr view:*)", "Bash(gh pr list:*)", "Bash(gh api repos/Vagblasterxl/chanfana-openapi-template/*)"
+    ],
+    "deny": [ "Read(.dev.vars)", "Edit(.dev.vars)", "Write(.dev.vars)" ]
+  }
+}
