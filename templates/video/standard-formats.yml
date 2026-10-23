@@ -1,0 +1,34 @@
+formats:
+  hero-landscape:
+    description: "Full-width hero video for web"
+    aspect_ratio: "16:9"
+    resolution: "1920x1080"
+    fps: 24
+    duration_seconds: 8
+    model: "veo-2"
+    mcp_server: "mcp-veo"
+
+  social-square:
+    description: "Square video for Instagram/social"
+    aspect_ratio: "1:1"
+    resolution: "1080x1080"
+    fps: 30
+    duration_seconds: 15
+    model: "veo-2"
+    mcp_server: "mcp-veo"
+
+  social-vertical:
+    description: "Vertical video for TikTok/Reels/Shorts"
+    aspect_ratio: "9:16"
+    resolution: "1080x1920"
+    fps: 30
+    duration_seconds: 60
+    model: "veo-2"
+    mcp_server: "mcp-veo"
+
+  thumbnail:
+    description: "Video thumbnail (generated as still image)"
+    aspect_ratio: "16:9"
+    resolution: "1280x720"
+    model: "imagen-3"
+    mcp_server: "mcp-imagen"

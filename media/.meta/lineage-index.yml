@@ -1,0 +1,25 @@
+# Lineage Index — Cross-asset relationship graph
+# Updated automatically when assets are generated or composed.
+#
+# Schema:
+#   assets:
+#     {asset-id}:
+#       type: image | video | music | speech | composition
+#       path: "media/{type}/{filename}"
+#       status: draft | review | approved | published | archived
+#       parents: []      # asset IDs this derives from
+#       children: []     # asset IDs derived from this
+#
+#   compositions:
+#     {comp-id}:
+#       name: "Human-readable name"
+#       components:
+#         - role: "video | background_music | voiceover | overlay"
+#           asset_id: "{asset-id}"
+
+version: "1.0"
+last_updated: null
+
+assets: {}
+
+compositions: {}

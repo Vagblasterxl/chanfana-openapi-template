@@ -1,0 +1,19 @@
+# Generation Log — Append-only record of all generation events
+# Each entry records a single generation action with full context.
+#
+# Schema per entry:
+#   - id: "gen-{YYYYMMDD}-{sequence}"
+#     timestamp: ISO 8601
+#     action: generate | derive | compose | approve | publish
+#     asset_id: "{asset-id}"
+#     model: "model name"
+#     mcp_server: "server name"
+#     prompt: "generation prompt"
+#     parameters: {}
+#     cost_estimate:
+#       api_calls: 1
+#       estimated_usd: 0.00
+#     duration_ms: 0
+
+version: "1.0"
+entries: []

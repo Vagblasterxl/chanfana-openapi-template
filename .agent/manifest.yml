@@ -1,0 +1,71 @@
+version: "1.0"
+
+project:
+  name: "symphony-creative-studio"
+  description: >
+    Cloudflare Worker backend + Symphony capture pipeline + generative AI media
+    studio. Captures knowledge via PowerToys Advanced Paste, routes through
+    Google Drive, and generates video/image/music/speech assets via Vertex AI.
+  type: "full-stack-creative"
+
+entry_points:
+  backend_api: "src/index.ts"
+  setup_installer: "setup/scripts/setup-windows.ps1"
+  ahk_automation: "setup/scripts/symphony-advanced-paste.ahk"
+  media_root: "media/"
+  templates_root: "templates/"
+
+capabilities:
+  - cloudflare-worker-api
+  - symphony-capture-pipeline
+  - notebooklm-integration
+  - google-drive-integration
+  - media-generation-vertex-ai
+  - local-ai-ollama
+  - ahk-automation
+  - asset-lineage-tracking
+
+mcp_servers:
+  - name: notebooklm
+    type: knowledge-management
+    provider: pantheon-security
+  - name: googleDrive
+    type: file-storage
+    provider: community
+  - name: mcp-imagen
+    type: image-generation
+    provider: google-vertex-ai
+  - name: mcp-veo
+    type: video-generation
+    provider: google-vertex-ai
+  - name: mcp-lyria
+    type: music-generation
+    provider: google-vertex-ai
+  - name: mcp-chirp
+    type: speech-synthesis
+    provider: google-vertex-ai
+  - name: mcp-gemini
+    type: multimodal-ai
+    provider: google-vertex-ai
+  - name: mcp-avtool
+    type: media-composition
+    provider: google-vertex-ai
+
+context_files:
+  root: "CLAUDE.md"
+  domains:
+    - "media/CLAUDE.md"
+    - "templates/CLAUDE.md"
+    - "setup/CLAUDE.md"
+
+file_conventions:
+  metadata_sidecars: "{filename}.meta.yml"
+  lineage_index: "media/.meta/lineage-index.yml"
+  generation_log: "media/.meta/generation-log.yml"
+  asset_id_format: "{type_prefix}-{YYYYMMDD}-{sequence}"
+  type_prefixes:
+    image: "img"
+    video: "vid"
+    music: "mus"
+    speech: "spch"
+    composition: "comp"
