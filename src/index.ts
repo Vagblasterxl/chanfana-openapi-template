@@ -10,6 +10,8 @@ import { syncRouter } from "./endpoints/sync/router";
 import { memRouter } from "./endpoints/mem/router";
 import { legalRouter } from "./endpoints/legal/router";
 import { HealthCheck } from "./endpoints/health";
+import { polarRouter } from "./endpoints/polar/router";
+import { discordRouter } from "./endpoints/discord/router";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 import { DummyEndpoint } from "./endpoints/dummyEndpoint";
 import { symphonyAuth } from "./middleware/auth";
@@ -77,6 +79,11 @@ openapi.route("/knowledge", knowledgeRouter);
 openapi.route("/sync", syncRouter);
 openapi.route("/mem", memRouter);
 openapi.route("/legal", legalRouter);
+// Register Polar webhook + entitlements sub router
+openapi.route("/polar", polarRouter);
+
+// Register the Discord interactions (slash command) sub router
+openapi.route("/discord", discordRouter);
 
 // Register other endpoints
 openapi.post("/dummy/:slug", DummyEndpoint);

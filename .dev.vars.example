@@ -10,3 +10,26 @@ MEM_API_KEY=sk-mem-xxxxxxxx-your-key-here
 # Optional: override the coordination auth token for local dev.
 # Defaults to the value in wrangler.jsonc vars.API_KEY if unset.
 # API_KEY=symphony-ken-2026
+
+# Polar webhook signing secret, copied from the webhook's settings in Polar.
+# Without it the Worker refuses every delivery to POST /polar/webhook with 503 —
+# it never falls back to accepting unverified events.
+#
+# Local:      copy this file to .dev.vars and fill it in
+# Deployed:   wrangler secret put POLAR_WEBHOOK_SECRET
+POLAR_WEBHOOK_SECRET=""
+
+# Discord application public key, from the application's General Information
+# page (64 hex characters). Without it the Worker refuses every request to
+# POST /discord/interactions with 503.
+#
+# Deployed:   wrangler secret put DISCORD_PUBLIC_KEY
+DISCORD_PUBLIC_KEY=""
+
+# Discord user ids allowed to run `/omega bind`, comma-separated. This exists
+# only to break the bootstrap cycle: before any binding exists nobody can hold
+# `registry.admin`, so nobody could create the first one. Every other command
+# authorizes against Polar entitlements, not against this list.
+#
+# Deployed:   wrangler secret put DISCORD_OPERATOR_IDS
+DISCORD_OPERATOR_IDS=""

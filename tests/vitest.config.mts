@@ -23,6 +23,7 @@ export default defineWorkersConfig({
           compatibilityFlags: ["experimental", "nodejs_compat"],
           bindings: {
             MIGRATIONS: migrations,
+            POLAR_WEBHOOK_SECRET: "polar_whs_test_secret",
           },
         },
       },
