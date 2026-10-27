@@ -1,0 +1,60 @@
+HANDOFF FOR A NEW CLAUDE — Symphony / Discord + Polar + Cloudflare
+Written 2026-10-27 by the Claude Code (cloud) session that built it.
+Read all of this, then reply to Ken in 2-3 lines saying what you understood and what you'll do first.
+
+== WHO YOU'RE WORKING FOR ==
+Ken. Not a developer, works from a Pixel phone, runs many AI agents.
+- Never hand Ken commands, code, or terminal steps. Do the work, or hand it to an agent that can.
+- Plain English. Answer first, then stop. No padding, no hedging.
+- Tag claims about how a tool behaves (tested) or (untested).
+- Never ask Ken to paste API keys or secrets into a chat.
+
+== WHAT THIS IS ==
+One GitHub repo holding Ken's agent backend, a Cloudflare Worker (Hono + Chanfana + D1 database):
+- Shared brain API: agents register, message each other, share state, knowledge graph.
+- Polar: POST /polar/webhook (signed, refuses unsigned) + GET /polar/entitlements = who paid for what.
+- Discord: POST /discord/interactions = slash commands, checked against Polar entitlements, landing on a message bus (table comms_messages). GET /discord/commands = command list to register with Discord.
+- Legal case builder for Ken's California workers' comp case (/legal/* + legal/ folder).
+- Git relay (relay/), Grok + Gemini cards (relay/cards/), Quad Commander hotkey script.
+
+== WHERE IT LIVES ==
+Repo:    https://github.com/Vagblasterxl/chanfana-openapi-template
+Branch:  claude/add-powertoys-documentation-1hpSY
+PR:      https://github.com/Vagblasterxl/chanfana-openapi-template/pull/3  (draft, everything is here)
+Polar+Discord came from PR #2 (another Claude), merged into PR #3 on 2026-10-25, merge commit 0245ee8.
+Full background: SYMPHONY-WRAPUP-2026-10-24.md in the repo (status report, spec, runbooks).
+
+== VERIFIED STATE (tested) ==
+- 110/110 tests pass on the merged code, incl. the Polar + Discord suites.
+- Build compiles. GitHub's own CI check ("test") is green on every push.
+- Polar/Discord code merged unchanged. Their migrations were renumbered to 0006 + 0007.
+- Live D1 database: openapi-template-db, id d7b93547-6fba-4766-afb3-7e39e6e36219, on Cloudflare account Vagblasterxl (9e6e291db1bc4c877db80a30ff15e92c). Migrations 0001-0005 applied (checked July 8). 0006 + 0007 NOT applied yet.
+- NOT LIVE. Cloudflare's auto-deploy ("Workers Builds" on the Vagblasterxl account) fails on every push. Install, build and tests were reproduced clean on the failing commits, so the cause is inside that Cloudflare account. The error log needs Ken's login.
+
+== WHAT'S LEFT, IN ORDER ==
+1. Ken picks the Cloudflare account: Vagblasterxl (already wired, holds the DB) or Assblasterxl (81df6339f3528e9fc2802a9b25d2e423).
+2. An agent using Ken's logged-in browser (Claude in Chrome) runs setup/runbooks/CLOUDFLARE-ATTACH.md: read the build log, apply the matching fix, retry, merge PR #3.
+3. Apply migrations 0006 + 0007 to the live D1.
+4. Set Worker secrets in the Cloudflare dashboard (Settings > Variables and Secrets), typed by Ken, never pasted in chat:
+   - POLAR_WEBHOOK_SECRET (Polar > Settings > Webhooks)
+   - DISCORD_PUBLIC_KEY (Discord Developer Portal > app > General Information)
+   - DISCORD_OPERATOR_IDS (Ken's Discord user ID)
+   - MEM_API_KEY (new one; the old one is burned)
+5. Paste the live Worker URL into Discord (Interactions Endpoint URL: <worker>/discord/interactions) and into Polar (webhook URL: <worker>/polar/webhook).
+6. Register the slash commands from GET /discord/commands.
+
+== RULES (decided by Ken, don't reopen) ==
+- No R2 storage (turning it on triggers Cloudflare billing). It's off on purpose.
+- No API keys in any file or chat. Secrets go in the Cloudflare dashboard only.
+- Don't create Cloudflare resources on any account without Ken saying so. Ken is retreating from account sprawl; hotmail + assblasterxl + sessybear accounts "got ate" — note only, don't investigate.
+- Before merging anything else into this code: check migration numbers don't collide (next free is 0008).
+
+== UNKNOWNS (untested) ==
+- "polar-mcp" Worker on the hotmail Cloudflare account: PR #2 copied its table layout; who runs it and whether it's live is unknown.
+- "Mission Box": appears nowhere in the repo or visible Cloudflare resources.
+- Other Claudes may have unpushed work. They must push it to a new branch in this repo so it can be seen.
+
+== HOW TO REACH THE CLAUDE THAT BUILT THIS ==
+Comment on PR #3: https://github.com/Vagblasterxl/chanfana-openapi-template/pull/3
+That session is subscribed and gets woken by PR #3 activity (tested for bot/CI events; human comments untested but same channel).
+If you can't use GitHub, give Ken a short message and he'll paste it into that chat.
