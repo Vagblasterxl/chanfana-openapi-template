@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "symphony.automation-engine.v1",
+  "title": "Symphony Automation Engine Response Schema",
+  "description": "Strict JSON schema that AI agents acting as Automation Engines MUST output. Forces programmatic responses instead of conversational text.",
+  "type": "object",
+  "required": ["protocol_version", "agent_id", "task", "status", "result"],
+  "properties": {
+    "protocol_version": {
+      "type": "string",
+      "enum": ["1.0"],
+      "description": "Schema version. Always 1.0 for current protocol."
+    },
+    "agent_id": {
+      "type": "string",
+      "description": "Agent ID from agents table (e.g. 'claude-opus', 'discord-bot-1')"
+    },
+    "task": {
+      "type": "object",
+      "required": ["id", "type", "input"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique task ID (UUID or task-{timestamp}-{slug})"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "generate-image",
+            "generate-video",
+            "generate-music",
+            "generate-speech",
+            "compose-asset",
+            "extract-knowledge",
+            "review-asset",
+            "send-message",
+            "update-state",
+            "research",
+            "transcribe"
+          ]
+        },
+        "input": {
+          "type": "object",
+          "description": "Task-specific input. Schema varies by task.type."
+        },
+        "parent_task": {
+          "type": ["string", "null"],
+          "description": "Parent task ID if this is a subtask"
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["queued", "running", "succeeded", "failed", "rejected"],
+      "description": "Current task state"
+    },
+    "result": {
+      "type": "object",
+      "required": ["timestamp"],
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "asset_ids": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Asset IDs created by this task (e.g. ['img-20260218-001'])"
+        },
+        "message_ids": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Message IDs sent during execution"
+        },
+        "state_updates": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Coordination state IDs touched"
+        },
+        "iosm_gates": {
+          "type": "object",
+          "description": "IOSM Governance Protocol results (required for review-asset tasks)",
+          "properties": {
+            "improve":    { "type": "object", "properties": { "pass": { "type": "boolean" }, "notes": { "type": "string" } } },
+            "optimize":   { "type": "object", "properties": { "pass": { "type": "boolean" }, "notes": { "type": "string" } } },
+            "shrink":     { "type": "object", "properties": { "pass": { "type": "boolean" }, "notes": { "type": "string" } } },
+            "modularize": { "type": "object", "properties": { "pass": { "type": "boolean" }, "notes": { "type": "string" } } }
+          }
+        },
+        "red_team": {
+          "type": "object",
+          "description": "TDD Red Team protocol results (required for review-asset tasks)",
+          "properties": {
+            "failure_cases": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["id", "description", "triggered"],
+                "properties": {
+                  "id": { "type": "string" },
+                  "description": { "type": "string" },
+                  "triggered": { "type": "boolean" }
+                }
+              }
+            },
+            "approved": { "type": "boolean" }
+          }
+        },
+        "svo_triples": {
+          "type": "array",
+          "description": "SVO Knowledge Extraction triples derived from this task",
+          "items": {
+            "type": "object",
+            "required": ["subject", "verb", "object"],
+            "properties": {
+              "subject": { "type": "string" },
+              "verb": {
+                "type": "string",
+                "enum": [
+                  "generated", "derived", "composed", "transcribed", "narrated",
+                  "created", "updated", "approved", "published", "archived",
+                  "requested", "delegated", "received", "acknowledged",
+                  "references", "cites", "contradicts", "supersedes", "extends"
+                ]
+              },
+              "object": { "type": "string" },
+              "context": { "type": "object" }
+            }
+          }
+        },
+        "error": {
+          "type": ["object", "null"],
+          "description": "Error details if status is 'failed' or 'rejected'",
+          "properties": {
+            "code": { "type": "string" },
+            "message": { "type": "string" },
+            "retryable": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "next_actions": {
+      "type": "array",
+      "description": "Tasks that should be queued as a result of this one",
+      "items": {
+        "type": "object",
+        "required": ["task_type", "input"],
+        "properties": {
+          "task_type": { "type": "string" },
+          "input": { "type": "object" },
+          "assigned_agent": { "type": ["string", "null"] }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

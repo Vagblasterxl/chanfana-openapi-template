@@ -1,0 +1,22 @@
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main, "claude/**"]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Secret scan (tracked files only)
+        run: |
+          if git ls-files | xargs grep -lE 'sk-mem-[0-9a-f]{8}|sk-ant-|ghp_[A-Za-z0-9]{20}' ; then
+            echo "::error::real-looking API key found in a tracked file"; exit 1; fi
+      - name: Build (dry-run) + tests
+        run: npm test

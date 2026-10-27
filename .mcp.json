@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "cloudflare": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mcp.cloudflare.com/mcp"]
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://api.githubcopilot.com/mcp/"]
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
+    },
+    "mem": {
+      "command": "npx",
+      "args": ["-y", "@mem-ai/mcp-server"],
+      "env": { "MEM_API_KEY": "${MEM_API_KEY}" }
+    }
+  }
+}

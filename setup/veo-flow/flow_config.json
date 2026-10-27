@@ -1,0 +1,45 @@
+{
+  "_note": "Veo 3.1 Flow Config — Firebase AI Logic (NOT Vertex AI). Videos save locally.",
+  "api": {
+    "base_url": "https://generativelanguage.googleapis.com/v1beta",
+    "model": "veo-3.1",
+    "auth": "GEMINI_API_KEY (env var)",
+    "NOT_vertex": true
+  },
+  "defaults": {
+    "duration": "10s",
+    "aspect_ratio": "16:9",
+    "resolution": "1080p",
+    "fps": 24,
+    "output_format": "mp4",
+    "safety_filter": "block_few"
+  },
+  "output": {
+    "local_dir": "./generated/video",
+    "naming": "{title}_{timestamp}.mp4",
+    "keep_artifacts": true,
+    "firebase_backup": false
+  },
+  "pipeline_modes": {
+    "single_shot": {
+      "description": "Generate one video from a prompt",
+      "command": "/veo <prompt>"
+    },
+    "storyboard_sequence": {
+      "description": "Generate a video for each storyboard panel",
+      "input": "storyboard panels array",
+      "output": "video per panel + concat final"
+    },
+    "audiobook_trailer": {
+      "description": "Generate a book trailer from story synopsis + panels",
+      "input": "story synopsis + key panels",
+      "output": "30-60s trailer video"
+    }
+  },
+  "discord_integration": {
+    "slash_command": "/veo",
+    "output_channel": "veo-renders",
+    "max_concurrent": 2,
+    "notify_on_complete": true
+  }
+}
